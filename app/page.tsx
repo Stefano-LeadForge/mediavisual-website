@@ -229,7 +229,7 @@ export default function HomePage() {
 
         {/* ── Layer 1: centro commerciale — desktop/mobile responsive ── */}
         <picture>
-          <source media="(max-width: 767px)" srcSet="/hero-mall-mobile.png" />
+          <source media="(max-width: 767px)" srcSet="/hero-mall-mobile-full.png" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             ref={mallBgRef}

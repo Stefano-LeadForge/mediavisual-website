@@ -181,8 +181,8 @@ export default function HomePage() {
           MEDIA<span>VISUAL</span>
         </a>
         <ul className="nav-links">
-          <li><a href="/prodotti">Prodotti</a></li>
-          <li><a href="/progetti">Progetti</a></li>
+          <li><a href="/servizi">Servizi</a></li>
+          <li><a href="/realizzazioni">Realizzazioni</a></li>
           <li><a href="/chi-siamo">Chi Siamo</a></li>
           <li><a href="/contatti">Contatti</a></li>
         </ul>
@@ -197,8 +197,8 @@ export default function HomePage() {
       {/* ══ MOBILE MENU ════════════════════════════════════════════════════ */}
       <div className="mobile-menu" id="mobileMenu" style={{ pointerEvents: 'none', opacity: 0 }}>
         <ul className="mobile-menu-list">
-          <li><a href="/prodotti"  className="mobile-menu-link">Prodotti</a></li>
-          <li><a href="/progetti"  className="mobile-menu-link">Progetti</a></li>
+          <li><a href="/servizi"        className="mobile-menu-link">Servizi</a></li>
+          <li><a href="/realizzazioni"  className="mobile-menu-link">Realizzazioni</a></li>
           <li><a href="/chi-siamo" className="mobile-menu-link">Chi Siamo</a></li>
           <li><a href="/contatti"  className="mobile-menu-link">Contatti</a></li>
         </ul>

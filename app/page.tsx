@@ -1,124 +1,121 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
 import { useLenis } from '@/components/SmoothScrolling';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
-gsap.registerPlugin(ScrollToPlugin);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-/* ── PANEL GEOMETRY (must match --panel-inset in globals.css) ──────────
-   Pannello bianco del totem in hero-stand.png:
-     left 18% · right 50% · top 10% · bottom 90%
-     center X = 34%  ·  center Y = 50%
-   Scale minima per coprire il viewport (bordo destro): (100-34)/16 = 4.1×
-   Si usa 5.5× per margine.
+/* ── PANEL GEOMETRY (hero-stand.png) ──────────────────────────────────
+   Il pannello bianco del totem occupa queste frazioni dell'immagine PNG.
+   Misurato dall'analisi visiva dell'immagine con sfondo trasparente.
+   L'immagine è landscape (4:3 circa); il pannello è centrato.
+     left  16%  right  84%  → larghezza pannello 68% dell'immagine
+     top    3%  bottom 80%  → altezza pannello   77% dell'immagine
+     center X = 50%   center Y = 41.5%
+   Questi valori guidano: transformOrigin, scale dinamico, posizione preview.
 ──────────────────────────────────────────────────────────────────────── */
-const PANEL = { top: 10, right: 50, bottom: 10, left: 18 } as const;
-
-/** Lerp lineare */
-function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
-
-/** Ease-out cubic */
-function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
+const PANEL = {
+  left:   0.16,
+  right:  0.84,
+  top:    0.03,
+  bottom: 0.80,
+  cx:     0.50,
+  cy:     0.415,
+} as const;
 
 export default function HomePage() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const lenisCtx     = useLenis();
-  const lenisRef     = useRef(lenisCtx);
-  lenisRef.current   = lenisCtx;
+  const lenisCtx  = useLenis();
+  const lenisRef  = useRef(lenisCtx);
+  lenisRef.current = lenisCtx;
 
-  /* ── FRAMER MOTION: scroll progress ────────────────────────────────────
-     offset ['start start', 'end end']:
-       0 = top del container allineato al top del viewport
-       1 = bottom del container allineato al bottom del viewport
-     Con container 250vh e viewport 100vh → animazione su 150vh di scroll.
-  ────────────────────────────────────────────────────────────────────── */
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end'],
-  });
-
-  /* ── ZOOM verso il pannello bianco del totem ────────────────────────────
-     transformOrigin = object-position = --hero-zoom-origin (34% 50%).
-     Il CSS garantisce che il punto 34%/50% dell'immagine coincida
-     esattamente con il punto 34%/50% del viewport → zoom matematicamente
-     centrato sul pannello.
-     Scale 5.5: il bordo destro del pannello (50%) raggiunge il 100% del
-     viewport a scale ≈ 4.1; 5.5 garantisce piena copertura.
-  ─────────────────────────────────────────────────────────────────────── */
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 5.5]);
-
-  /* Testo hero: opacity 1 → 0 nel primo 35% dello scroll */
-  const textOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
-
-  /* Scroll cue: scompare nel primo 12% */
-  const cueOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
-
-  /* ── PANEL BURST: clip-path inset() da rettangolo-pannello a viewport ────
-     La clip parte identica ai bordi del pannello bianco nel totem.
-     Mentre l'utente scorre:
-       – l'immagine di sfondo ha già riempito il viewport di bianco (scale > 4)
-       – il burst si apre come un'iride, rivelando la sezione successiva
-     Il teaser (testo dentro la clip iniziale) crea l'effetto "anteprima
-     nello schermo del totem".
-
-     Timing:
-       0.55 → 1.00  clip si apre (45% dello scroll travel = ~67vh)
-       0.52 → 0.65  teaser appare in fade-in
-       0.85 → 0.98  teaser scompare in fade-out (prima del passaggio sezione)
-  ─────────────────────────────────────────────────────────────────────── */
-  const burstClipPath = useTransform(scrollYProgress, (p: number) => {
-    const t  = Math.max(0, Math.min(1, (p - 0.55) / 0.45));
-    const te = easeOut(t);
-    const top   = lerp(PANEL.top,    0, te).toFixed(2);
-    const right = lerp(PANEL.right,  0, te).toFixed(2);
-    const bot   = lerp(PANEL.bottom, 0, te).toFixed(2);
-    const left  = lerp(PANEL.left,   0, te).toFixed(2);
-    return `inset(${top}% ${right}% ${bot}% ${left}%)`;
-  });
-
-  const teaserOpacity = useTransform(
-    scrollYProgress,
-    [0.52, 0.65, 0.85, 0.98],
-    [0, 1, 1, 0],
-  );
+  const heroRef      = useRef<HTMLElement>(null);
+  const mallBgRef    = useRef<HTMLImageElement>(null);
+  const standWrapRef = useRef<HTMLDivElement>(null);
+  const contentRef   = useRef<HTMLDivElement>(null);
+  const scrollCueRef = useRef<HTMLDivElement>(null);
+  const previewRef   = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     /* ── REDUCED MOTION ── */
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.set(['#nav', '#heroContent'], { opacity: 1, y: 0, clearProps: 'transform' });
+      gsap.set(['#nav', '#heroContent'], { opacity: 1, y: 0 });
       return;
     }
 
-    /* ── STATO INIZIALE ─────────────────────────────────────────────────
-       Solo nav e heroContent — GSAP non tocca l'immagine (gestita da FM).
+    /* ── POWER-ON ENTRANCE ───────────────────────────────────────────────
+       Nav scende dall'alto; scanline CRT percorre il viewport;
+       il blocco contenuto si eleva. Solo se la pagina parte da top.
     ─────────────────────────────────────────────────────────────────────  */
     gsap.set('#nav',         { opacity: 0, y: -12 });
-    gsap.set('#heroContent', { opacity: 0, y: 40 });
-    gsap.set('#scanline',    { y: 0, opacity: 0 });
+    gsap.set('#heroContent', { opacity: 0, y: 40  });
+    gsap.set('#scanline',    { y: 0, opacity: 0   });
 
     if (window.scrollY > 0) {
       gsap.set('#nav',         { opacity: 1, y: 0 });
       gsap.set('#heroContent', { opacity: 1, y: 0 });
-      return;
+    } else {
+      gsap.timeline({ defaults: { ease: 'power3.out' } })
+        .to('#nav',         { opacity: 1, y: 0, duration: 0.9 }, 0)
+        .to('#scanline',    { opacity: 1, duration: 0.05 }, 0.2)
+        .to('#scanline',    { y: '100vh', duration: 1.2, ease: 'power2.inOut' }, 0.2)
+        .to('#scanline',    { opacity: 0, duration: 0.08 }, 1.38)
+        .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
     }
 
-    /* ═══════════════════════════════════════════════════════════════════
-       POWER-ON SEQUENCE
-         0.0s  → 0.9s : Nav scende dall'alto
-         0.2s  → 1.4s : Scanline CRT wipe
-         1.1s  → 2.1s : Logo + titolo si elevano in blocco
-    ═══════════════════════════════════════════════════════════════════ */
-    gsap.timeline({ defaults: { ease: 'power3.out' } })
-      .to('#nav',         { opacity: 1, y: 0, duration: 0.9 }, 0)
-      .to('#scanline',    { opacity: 1, duration: 0.05 }, 0.2)
-      .to('#scanline',    { y: '100vh', duration: 1.2, ease: 'power2.inOut' }, 0.2)
-      .to('#scanline',    { opacity: 0, duration: 0.08 }, 1.38)
-      .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
+    /* ── SCROLL-DRIVEN ZOOM ──────────────────────────────────────────────
+       Calcola dinamicamente lo scale necessario affinché il pannello bianco
+       del totem riempia esattamente il viewport.
 
-    /* ── NAV: diventa solido dopo 50px di scroll ── */
+       Meccanica:
+       1. Lo stand PNG ha sfondo trasparente: solo il pannello è opaco.
+       2. Con transformOrigin al centro del pannello (50% 41.5%), lo scale
+          espande l'immagine tenendo fermo quel punto.
+       3. Quando il pannello raggiunge i bordi del viewport, le zone
+          trasparenti (pali, piedi) sono già fuori dal viewport → clippate.
+       4. Il risultato è bianco puro che riempie tutto il viewport.
+    ─────────────────────────────────────────────────────────────────────  */
+    const standWrap = standWrapRef.current;
+    if (!standWrap) return;
+
+    const computeScale = () => {
+      const rect = standWrap.getBoundingClientRect();
+      const vw   = window.innerWidth;
+      const vh   = window.innerHeight;
+      const panelW = (PANEL.right - PANEL.left) * rect.width;
+      const panelH = (PANEL.bottom - PANEL.top) * rect.height;
+      /* Prendiamo il maggiore dei due fattori per coprire entrambe le dimensioni */
+      return Math.max(vw / panelW, vh / panelH) * 1.08; // 8% safety margin
+    };
+
+    /* Transform origin: centro del pannello bianco come % dell'elemento */
+    gsap.set(standWrap, {
+      transformOrigin: `${PANEL.cx * 100}% ${PANEL.cy * 100}%`,
+    });
+
+    const buildTimeline = () => gsap.timeline({ paused: true })
+      /* contenuto hero: svanisce e sale leggermente */
+      .to(contentRef.current,   { opacity: 0, y: -24, duration: 0.35, ease: 'power2.in' }, 0)
+      .to(scrollCueRef.current, { opacity: 0, duration: 0.2 }, 0)
+      /* sfondo mall: zoom leggero + attenuazione */
+      .to(mallBgRef.current,    { scale: 1.12, opacity: 0.35, duration: 1, ease: 'none' }, 0)
+      /* stand: zoom verso il pannello bianco */
+      .to(standWrap,            { scale: computeScale(), duration: 1, ease: 'none' }, 0);
+
+    const tl = buildTimeline();
+
+    const st = ScrollTrigger.create({
+      trigger:   heroRef.current,
+      start:     'top top',
+      end:       '+=380',           /* ~380px di scroll effettivo */
+      pin:       true,
+      scrub:     0.6,
+      animation: tl,
+    });
+
+    /* ── NAV: diventa solido dopo 50px ── */
     const navEl = document.getElementById('nav');
     function onNavScroll() {
       navEl?.classList.toggle('nav--solid', window.scrollY > 50);
@@ -155,23 +152,22 @@ export default function HomePage() {
         { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out', delay: 0.18 },
       );
     }
-    function closeMenu(cb?: () => void) {
+    function closeMenu() {
       menuOpen = false;
       hamburgerEl?.classList.remove('is-open');
       document.body.style.overflow = '';
       gsap.to(mobileLinks, { opacity: 0, y: 16, duration: 0.22, ease: 'power2.in', stagger: 0.04 });
       gsap.to(mobileMenuEl, {
         opacity: 0, duration: 0.28, delay: 0.18, ease: 'power2.in',
-        onComplete: () => {
-          if (mobileMenuEl) mobileMenuEl.style.pointerEvents = 'none';
-          cb?.();
-        },
+        onComplete: () => { if (mobileMenuEl) mobileMenuEl.style.pointerEvents = 'none'; },
       });
     }
     function onHamburgerClick() { menuOpen ? closeMenu() : openMenu(); }
     hamburgerEl?.addEventListener('click', onHamburgerClick);
 
     return () => {
+      st.kill();
+      tl.kill();
       window.removeEventListener('scroll', onNavScroll);
       document.getElementById('ctaScroll')?.removeEventListener('click', scrollToNext);
       hamburgerEl?.removeEventListener('click', onHamburgerClick);
@@ -182,7 +178,7 @@ export default function HomePage() {
   return (
     <div className="home-page">
 
-      {/* ══ NAV — fixed, fuori dal container hero ════════════════════════ */}
+      {/* ══ NAV ════════════════════════════════════════════════════════════ */}
       <nav id="nav">
         <a href="/" className="nav-wordmark" aria-label="Mediavisual — Homepage">
           MEDIA<span>VISUAL</span>
@@ -201,7 +197,7 @@ export default function HomePage() {
         </button>
       </nav>
 
-      {/* ══ MOBILE MENU OVERLAY ══ */}
+      {/* ══ MOBILE MENU ════════════════════════════════════════════════════ */}
       <div className="mobile-menu" id="mobileMenu" style={{ pointerEvents: 'none', opacity: 0 }}>
         <ul className="mobile-menu-list">
           <li><a href="/prodotti"  className="mobile-menu-link">Prodotti</a></li>
@@ -213,123 +209,119 @@ export default function HomePage() {
         <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>
       </div>
 
-      {/* ══ IMMERSIVE ZOOM HERO ══════════════════════════════════════════════
-          containerRef (250vh) crea lo scroll room per Framer Motion.
-          hero-sticky-inner rimane fisso mentre il container scorre.
-
-          ── COME CALIBRARE ──────────────────────────────────────────────────
-          1. Apri DevTools, ispeziona .hero-zoom-img
-          2. Misura il centro del pannello bianco come % di width/height
-          3. Aggiorna --hero-zoom-origin e PANEL in page.tsx
-          4. Aggiorna --panel-inset in globals.css con i nuovi bordi
+      {/* ══ HERO ════════════════════════════════════════════════════════════
+          Due layer separati: mall background + stand foreground PNG.
+          ScrollTrigger pinna la sezione e zooma lo stand finché il
+          pannello bianco riempie il viewport — poi la sezione successiva
+          (sfondo bianco) continua naturalmente.
       ══ */}
-      <div ref={containerRef} className="hero-scroll-container">
-        <div className="hero-sticky-inner">
+      <section className="hero-section" ref={heroRef} id="heroSection">
 
-          {/* CRT scanline — power-on entrance */}
-          <div className="hero-scanline" id="scanline" aria-hidden="true" />
+        {/* CRT scanline — power-on entrance */}
+        <div className="hero-scanline" id="scanline" aria-hidden="true" />
 
-          {/* ── BACKGROUND: zoom verso il pannello bianco ─────────────────
-              object-position = transformOrigin = --hero-zoom-origin:
-              lo stesso punto fisso garantisce che il pannello bianco sia
-              sempre il baricentro dello zoom, indipendentemente dalle
-              dimensioni del viewport. */}
-          <motion.div
-            className="hero-zoom-bg"
-            style={{
-              scale,
-              transformOrigin: 'var(--hero-zoom-origin, 34% 50%)',
-              willChange: 'transform',
-            }}
-          >
+        {/* ── LAYER 1: sfondo centro commerciale ──────────────────────────
+            Copre l'intero viewport. GSAP lo zooma e attenua leggermente
+            durante lo scroll, creando profondità. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={mallBgRef}
+          src="/hero-mall.png"
+          alt=""
+          className="hero-mall-bg"
+          aria-hidden="true"
+          draggable={false}
+        />
+
+        {/* Gradiente scuro sinistra — leggibilità testo */}
+        <div className="hero-tint" aria-hidden="true" />
+
+        {/* ── LAYER 2: stand pubblicitario (PNG trasparente) ───────────────
+            Posizionato in basso al centro. GSAP zooma l'intera immagine
+            con transformOrigin al centro del pannello bianco (50% 41.5%).
+            Le zone trasparenti si allargano oltre il viewport: rimane
+            visibile solo il pannello bianco, che diventa lo sfondo della
+            sezione successiva.
+
+            .hero-stand-positioner — solo per l'allineamento CSS
+            .hero-stand-wrap       — target GSAP per lo scale */}
+        <div className="hero-stand-positioner">
+          <div className="hero-stand-wrap" ref={standWrapRef}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/hero-stand.png"
-              alt="Mediavisual — stand pubblicitario"
-              className="hero-zoom-img"
+              alt="Stand pubblicitario Mediavisual"
+              className="hero-stand-img"
               draggable={false}
             />
-          </motion.div>
 
-          {/* Gradiente scuro lato sinistro — leggibilità testo */}
-          <div className="hero-tint" />
-
-          {/* ── CONTENT: opacity guidata dallo scroll (FM) ──
-              L'inner #heroContent è l'obiettivo GSAP per la power-on entrance.
-              I due layer (FM opacity outer / GSAP opacity inner) non si sovrappongono. */}
-          <motion.div className="hero-content-layer" style={{ opacity: textOpacity }}>
-            <div id="heroContent" className="hero-content-block">
-
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo-mediavisual.jpeg"
-                alt="Mediavisual"
-                className="hero-logo"
-              />
-
-              <h1 className="hero-headline">
-                il tuo brand,<br />
-                <em>al centro dell&apos;attenzione.</em>
-              </h1>
-
-              <div className="hero-cta-row">
-                <a href="/contatti" className="cta-primary">
-                  <span>Richiedi un Progetto</span>
-                  <span className="arr" />
-                </a>
-                <a
-                  href="#nextSection"
-                  className="hero-scroll-arrow"
-                  id="ctaScroll"
-                  aria-label="Scorri alla sezione successiva"
-                >
-                  <span className="hero-scroll-arrow-icon" />
-                </a>
-              </div>
-
-            </div>
-          </motion.div>
-
-          {/* Scroll cue — Framer Motion gestisce il fade-out */}
-          <motion.div className="scroll-cue visible" style={{ opacity: cueOpacity }}>
-            <span className="scroll-cue-text">Scorri</span>
-            <div className="scroll-cue-line" />
-          </motion.div>
-
-          {/* ══ PANEL BURST ═══════════════════════════════════════════════
-              Il clip-path inset() parte dai bordi esatti del pannello bianco
-              del totem e si apre fino a coprire l'intero viewport.
-
-              Mentre l'immagine di sfondo zooma verso il pannello (z-index 0),
-              il burst overlay (z-index 25) si apre dalla stessa area con un
-              clip animato, rivelando il contenuto della sezione successiva.
-
-              Il .hero-panel-teaser è posizionato DENTRO i bordi iniziali
-              del clip (18–50% X, 10–90% Y), così appare come anteprima
-              "nello schermo del totem" durante l'apertura.
-          ══ */}
-          <motion.div
-            className="hero-panel-burst"
-            style={{ clipPath: burstClipPath }}
-            aria-hidden="true"
-          >
-            <motion.div className="hero-panel-teaser" style={{ opacity: teaserOpacity }}>
-              <div className="section-eyebrow">
+            {/* ── PREVIEW nella zona bianca del pannello ─────────────────
+                Posizionata con le stesse % di PANEL: top 3%, left 16%,
+                width 68%, height 77%. Mentre lo stand zooma, questa
+                preview zooma proporzionalmente — l'utente percepisce
+                di "entrare" nel pannello. Svanisce nella sezione reale. */}
+            <div
+              className="hero-panel-preview"
+              ref={previewRef}
+              aria-hidden="true"
+            >
+              <div className="section-eyebrow preview-eyebrow">
                 <div className="section-eyebrow-line" />
                 <span className="section-eyebrow-text">Chi Siamo</span>
               </div>
-              <h2 className="section-title">
+              <h2 className="section-title preview-title">
                 Progettiamo e installiamo<br />strutture ad alto impatto visivo.
               </h2>
-            </motion.div>
-          </motion.div>
-
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* ══ PRIMA SEZIONE ════════════════════════════════════════════════
-          #nextSection è il target dello scroll-arrow e il confine
-          post-zoom. Il background bianco continua dal burst overlay.
+        {/* ── CONTENT: headline + CTA ─────────────────────────────────────
+            GSAP dissolve durante lo zoom (opacity 0, y -24). */}
+        <div className="hero-content-layer" ref={contentRef}>
+          <div id="heroContent" className="hero-content-block">
+
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-mediavisual.jpeg"
+              alt="Mediavisual"
+              className="hero-logo"
+            />
+
+            <h1 className="hero-headline">
+              il tuo brand,<br />
+              <em>al centro dell&apos;attenzione.</em>
+            </h1>
+
+            <div className="hero-cta-row">
+              <a href="/contatti" className="cta-primary">
+                <span>Richiedi un Progetto</span>
+                <span className="arr" />
+              </a>
+              <a
+                href="#nextSection"
+                className="hero-scroll-arrow"
+                id="ctaScroll"
+                aria-label="Scorri alla sezione successiva"
+              >
+                <span className="hero-scroll-arrow-icon" />
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Scroll cue */}
+        <div className="scroll-cue visible" ref={scrollCueRef} aria-hidden="true">
+          <span className="scroll-cue-text">Scorri</span>
+          <div className="scroll-cue-line" />
+        </div>
+
+      </section>
+
+      {/* ══ SECONDA SEZIONE ═════════════════════════════════════════════════
+          Sfondo bianco: continua naturalmente dal pannello bianco del totem.
+          La transizione è invisibile — bianco su bianco.
       ══ */}
       <section className="next-section" id="nextSection">
         <div className="section-eyebrow">

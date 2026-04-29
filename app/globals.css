@@ -54,114 +54,117 @@ body::before {
 }
 
 /* ══════════════════════════════════════
-   IMMERSIVE ZOOM HERO
+   HERO — DUE LAYER: MALL BG + STAND PNG
 ══════════════════════════════════════ */
 .home-page { min-height: 100vh; }
 
-/* ── CALIBRAZIONE ZOOM ─────────────────────────────────────────────────
-   --hero-zoom-origin  = centro del pannello bianco del totem (X% Y%)
-                         Usato sia da object-position che da transformOrigin:
-                         il CSS garantisce che i due valori corrispondano
-                         alla STESSA posizione fisica nell'immagine e nel viewport.
-
-   --panel-inset       = bordi del pannello bianco in formato inset()
-                         (top right bottom left, misurati dai bordi del viewport)
-                         Usato per il burst clip-path di apertura.
-
-   Geometria pannello (hero-stand.png):
-     ← left 18% · right 50% → center X 34%
-     ↑ top  10% · bottom 90% → center Y 50%
-   Scala minima per coprire il viewport (bordo destro → 100%):
-     (100 - 34) / 16 = 4.13 → si usa 5.5 per margine.
+/* ── SEZIONE HERO ──────────────────────────────────────────────────────
+   ScrollTrigger pinna questa sezione per 380px di scroll effettivo.
+   overflow:hidden è critico: taglia le zone trasparenti dello stand PNG
+   quando zooma oltre i bordi del viewport.
 ─────────────────────────────────────────────────────────────────────── */
-:root {
-  --hero-zoom-origin: 34% 50%;
-  --panel-inset: 10% 50% 10% 18%;   /* inset(top right bottom left) = pannello bianco */
-}
-
-/* Outer: crea lo scroll room per l'animazione Framer Motion */
-.hero-scroll-container {
+.hero-section {
   position: relative;
-  height: 250vh;
-}
-
-/* Inner: rimane fisso mentre il container scorre */
-.hero-sticky-inner {
-  position: sticky;
-  top: 0;
   height: 100vh;
-  width: 100%;
   overflow: hidden;
 }
 
-/* Wrapper dell'immagine — Framer Motion gestisce scale e transformOrigin */
-.hero-zoom-bg {
+/* ── LAYER 1: sfondo centro commerciale ─────────────────────────────── */
+.hero-mall-bg {
   position: absolute;
   inset: 0;
-  z-index: 0;
-}
-
-/* Immagine a tutto schermo */
-.hero-zoom-img {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  /*
-   * object-position = --hero-zoom-origin:
-   * CSS garantisce che il punto X% Y% dell'IMMAGINE coincida con il punto
-   * X% Y% del VIEWPORT — identico valore di transformOrigin → zoom perfetto.
-   */
-  object-position: var(--hero-zoom-origin);
+  object-position: center;
   display: block;
   pointer-events: none;
   user-select: none;
+  z-index: 0;
+  will-change: transform, opacity;
 }
 
-/* Gradiente scuro lato sinistro — garantisce leggibilità del testo */
+/* ── GRADIENTE: leggibilità testo lato sinistro ─────────────────────── */
 .hero-tint {
   position: absolute; inset: 0; z-index: 1;
   pointer-events: none;
   background: linear-gradient(
     105deg,
-    rgba(0,0,0,0.65) 0%,
-    rgba(0,0,0,0.38) 42%,
-    transparent 68%
+    rgba(0,0,0,0.60) 0%,
+    rgba(0,0,0,0.30) 40%,
+    transparent 65%
   );
 }
 
-/* ── PANEL BURST OVERLAY ─────────────────────────────────────────────
-   Rettangolo bianco che parte dal pannello del totem e si apre fino a
-   coprire l'intero viewport. Il clip-path inset() è animato da Framer
-   Motion (page.tsx: burstClipPath).
+/* ── LAYER 2: stand PNG (sfondo trasparente) ────────────────────────────
+   .hero-stand-positioner  — allineamento CSS puro (bottom center)
+   .hero-stand-wrap        — target GSAP per scale; transformOrigin
+                             impostato inline da JS (50% 41.5%)
+   .hero-stand-img         — l'immagine PNG in sé
+   .hero-panel-preview     — contenuto posizionato dentro il pannello bianco
 
-   Valore iniziale: var(--panel-inset) = inset(10% 50% 10% 18%)
-     → mostra solo l'area del pannello bianco del totem
-   Valore finale:   inset(0% 0% 0% 0%)
-     → copre l'intero viewport, rivelando la sezione successiva
-
-   .hero-panel-teaser — contenuto posizionato DENTRO i bordi iniziali
-   del clip, così appare come anteprima nello "schermo" del totem.
+   Geometria: stand a 75vh di altezza, centrato, ancorato al bottom.
+   Questo posiziona il centro del pannello bianco a ~(50vw, ~46vh) —
+   vicino al centro del viewport — ottimale per lo zoom.
 ─────────────────────────────────────────────────────────────────────── */
-.hero-panel-burst {
+.hero-stand-positioner {
   position: absolute;
-  inset: 0;
-  z-index: 25;
-  background: #ffffff;
-  overflow: hidden;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
   pointer-events: none;
 }
 
-/* Anteprima contenuto — posizionata nel pannello iniziale (18–50% X, 10–90% Y) */
-.hero-panel-teaser {
+.hero-stand-wrap {
+  position: relative;
+  height: 75vh;
+  width: auto;
+  will-change: transform;
+}
+
+.hero-stand-img {
+  height: 100%;
+  width: auto;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Preview nella zona bianca del pannello ─────────────────────────────
+   Coordinate: top=3%, left=16%, width=68%, height=77% dell'immagine
+   (coincidono con la costante PANEL in page.tsx).
+   Mentre lo stand zooma, questa preview scala proporzionalmente:
+   l'utente percepisce di "entrare" nel pannello dello stand.
+   font-size ridotto per essere leggibile a scale=1; a zoom completo
+   il testo riempie il pannello a dimensioni viewport.
+─────────────────────────────────────────────────────────────────────── */
+.hero-panel-preview {
   position: absolute;
-  left: 19%;
-  top: 13%;
-  width: 28%;
+  top:    3%;
+  left:   16%;
+  width:  68%;
+  height: 77%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6% 8%;
+  box-sizing: border-box;
   pointer-events: none;
 }
-.hero-panel-teaser .section-eyebrow { margin-bottom: 1rem; }
-.hero-panel-teaser .section-title   { font-size: clamp(1rem, 2.1vw, 2rem); max-width: 100%; }
 
-/* Layer Framer Motion per l'opacity scroll-driven */
+.preview-eyebrow .section-eyebrow-text { color: var(--primary-mid); font-size: 7px; }
+.preview-eyebrow .section-eyebrow-line { background: var(--secondary); }
+.preview-eyebrow { margin-bottom: 0.6rem; }
+
+.preview-title {
+  font-size: clamp(0.6rem, 1.4vw, 1.1rem) !important;
+  color: var(--primary) !important;
+  line-height: 1.1 !important;
+  max-width: 100% !important;
+}
+
+/* ── Contenuto hero: headline + CTA ────────────────────────────────── */
 .hero-content-layer {
   position: absolute; inset: 0; z-index: 10;
   display: flex; align-items: center;
@@ -170,16 +173,11 @@ body::before {
 .hero-content-layer a,
 .hero-content-layer button { pointer-events: auto; }
 
-/* Blocco contenuto — posizionato a sinistra del totem */
 .hero-content-block {
   padding: 0 clamp(2rem, 6vw, 6rem);
   max-width: 560px;
 }
 
-/* Logo — mix-blend-mode:multiply simula la trasparenza:
- * il bianco del JPEG scompare fondendosi con lo sfondo scuro,
- * i colori del logo restano visibili.
- * Per risultato ottimale usare un PNG con alpha canale. */
 .hero-logo {
   display: block;
   width: clamp(90px, 12vw, 160px);
@@ -189,14 +187,12 @@ body::before {
   filter: brightness(1.15) contrast(1.05);
 }
 
-/* Headline Industrial Luxury — lowercase per contrasto col brand */
 .hero-headline {
   font-family: var(--font-barlow), sans-serif;
   font-weight: 900;
   font-size: clamp(2.4rem, 5vw, 5rem);
   line-height: 1.05;
   letter-spacing: -0.02em;
-  text-transform: none;
   color: var(--text);
   margin-bottom: 2.5rem;
 }
@@ -206,22 +202,11 @@ body::before {
   display: block;
 }
 
-/* CTA row */
 .hero-cta-row {
   display: flex; align-items: center; gap: 1.5rem;
 }
 
-/* ── SCANLINE: effetto accensione CRT ───────────────────────────────────
-   GSAP anima:
-     opacity 0 → 1  (istantaneo, t=0.2s)
-     y 0 → 100vh    (1.2s, power2.inOut) — scorrimento top → bottom
-     opacity 1 → 0  (istantaneo, t=1.38s)
-
-   Per modificare il colore del bagliore: aggiorna i rgba sotto.
-   Per modificare lo spessore: aggiorna height.
-   Per rimuovere l'effetto: elimina questo div e il blocco "SCANLINE"
-   nel useEffect di page.tsx.
-─────────────────────────────────────────────────────────────────────── */
+/* ── CRT SCANLINE ──────────────────────────────────────────────────── */
 .hero-scanline {
   position: absolute;
   top: 0; left: 0; right: 0;
@@ -239,7 +224,7 @@ body::before {
     0 0 20px rgba(200,192,176,0.4),
     0 0 60px rgba(200,192,176,0.12);
   z-index: 50;
-  opacity: 0;     /* GSAP gestisce opacity e y */
+  opacity: 0;
   pointer-events: none;
   will-change: transform, opacity;
 }
@@ -440,8 +425,8 @@ body::before {
   50%       { transform: scaleY(0.4); opacity: 0.15; }
 }
 
-/* GPU hint per i blocchi animati */
-.hero-eyebrow, .hero-title, .hero-cta-group { backface-visibility: hidden; }
+/* GPU hint */
+.hero-stand-wrap, .hero-mall-bg { backface-visibility: hidden; }
 
 /* ══════════════════════════════════════════
    PRIMA SEZIONE DOPO HERO (#nextSection)
@@ -649,6 +634,9 @@ body::before {
   .nav-links, .nav-btn { display: none; }
   .hamburger { display: flex; }
 
+  .hero-section { height: 100svh; }
+  .hero-stand-wrap { height: 65vw; } /* su mobile: proporzionale alla larghezza */
+  .hero-panel-preview { display: none; } /* nascosta su mobile: troppo piccola */
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
   .hero-logo { width: clamp(80px, 28vw, 140px); }

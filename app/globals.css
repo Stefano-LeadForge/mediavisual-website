@@ -96,56 +96,20 @@ body::before {
   );
 }
 
-/* ── LAYER 2: stand PNG (sfondo trasparente) ────────────────────────────
-   .hero-stand-positioner  — allineamento CSS puro (bottom center)
-   .hero-stand-wrap        — target GSAP per scale; transformOrigin
-                             impostato inline da JS (50% 41.5%)
-   .hero-stand-img         — l'immagine PNG in sé
-   .hero-panel-preview     — contenuto posizionato dentro il pannello bianco
-
-   Geometria: stand a 75vh di altezza, centrato, ancorato al bottom.
-   Questo posiziona il centro del pannello bianco a ~(50vw, ~46vh) —
-   vicino al centro del viewport — ottimale per lo zoom.
-─────────────────────────────────────────────────────────────────────── */
-.hero-stand-positioner {
+/* ── LAYER 2: stand centrato nell'hero ── */
+.hero-stand-center {
   position: absolute;
-  bottom: 0;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   z-index: 5;
-  pointer-events: none;
-}
-
-.hero-stand-wrap {
-  position: relative;
-  height: 78vh;
+  height: 80vh;
   width: auto;
-  will-change: transform;
-}
-
-.hero-stand-img {
-  height: 100%;
-  width: auto;
-  display: block;
+  max-width: 90vw;
   pointer-events: none;
   user-select: none;
-  /* Il PNG non ha canale alpha reale: multiply rende bianchi/chiari trasparenti */
-  mix-blend-mode: multiply;
 }
 
-/* ── Preview nella zona bianca del pannello ─────────────────────────────
-   Coordinate: top=3%, left=16%, width=68%, height=77% dell'immagine
-   (coincidono con la costante PANEL in page.tsx).
-   Mentre lo stand zooma, questa preview scala proporzionalmente:
-   l'utente percepisce di "entrare" nel pannello dello stand.
-   font-size ridotto per essere leggibile a scale=1; a zoom completo
-   il testo riempie il pannello a dimensioni viewport.
-─────────────────────────────────────────────────────────────────────── */
-/* ── OVERLAY BIANCO ────────────────────────────────────────────────────
-   Parte a opacity 0, GSAP lo porta a 1 al 40% dello scroll.
-   Copre tutto il viewport → passaggio "flash bianco" → seconda sezione.
-   z-index 30: sopra allo stand, sotto alla nav e al contenuto hero.
-─────────────────────────────────────────────────────────────────────── */
 .hero-white-overlay {
   position: absolute;
   inset: 0;
@@ -154,36 +118,6 @@ body::before {
   opacity: 0;
   pointer-events: none;
   will-change: opacity;
-}
-
-/* ── PREVIEW nel pannello bianco ────────────────────────────────────────
-   Coordinate PANEL: left 26%, top 8%, width 48%, height 62%.
-   Il div scala proporzionalmente allo stand durante il zoom → effetto
-   "il viewer sta entrando nel pannello".
-─────────────────────────────────────────────────────────────────────── */
-.hero-panel-preview {
-  position: absolute;
-  top:    8%;
-  left:   26%;
-  width:  48%;
-  height: 62%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 6% 8%;
-  box-sizing: border-box;
-  pointer-events: none;
-}
-
-.preview-eyebrow .section-eyebrow-text { color: var(--primary-mid); font-size: 7px; }
-.preview-eyebrow .section-eyebrow-line { background: var(--secondary); }
-.preview-eyebrow { margin-bottom: 0.6rem; }
-
-.preview-title {
-  font-size: clamp(0.6rem, 1.4vw, 1.1rem) !important;
-  color: var(--primary) !important;
-  line-height: 1.1 !important;
-  max-width: 100% !important;
 }
 
 /* ── Contenuto hero: headline + CTA ────────────────────────────────── */
@@ -205,7 +139,6 @@ body::before {
   width: clamp(90px, 12vw, 160px);
   height: auto;
   margin-bottom: clamp(1.5rem, 3vh, 2.5rem);
-  mix-blend-mode: multiply;
   filter: brightness(1.15) contrast(1.05);
 }
 
@@ -448,7 +381,7 @@ body::before {
 }
 
 /* GPU hint */
-.hero-stand-wrap, .hero-mall-bg { backface-visibility: hidden; }
+.hero-stand-center, .hero-mall-bg { backface-visibility: hidden; }
 
 /* ══════════════════════════════════════════
    PRIMA SEZIONE DOPO HERO (#nextSection)
@@ -870,8 +803,7 @@ body::before {
   .hamburger { display: flex; }
 
   .hero-section { height: 100svh; }
-  .hero-stand-wrap { height: 65vw; } /* su mobile: proporzionale alla larghezza */
-  .hero-panel-preview { display: none; } /* nascosta su mobile: troppo piccola */
+  .hero-stand-center { height: 55vh; }
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
   .hero-logo { width: clamp(80px, 28vw, 140px); }

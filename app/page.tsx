@@ -181,6 +181,15 @@ export default function HomePage() {
         {/* Gradiente scuro sinistra per leggibilità testo */}
         <div className="hero-tint" aria-hidden="true" />
 
+        {/* ── Layer 2: stand centrato ── */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero-stand-trasp.png"
+          alt="Stand pubblicitario Mediavisual"
+          className="hero-stand-center"
+          aria-hidden="true"
+          draggable={false}
+        />
 
         {/* ── White overlay ──────────────────────────────────────────────────
             Parte trasparente, fade-in al 40% dello scroll.
@@ -195,6 +204,13 @@ export default function HomePage() {
         {/* ── Contenuto hero: logo + headline + CTA ── */}
         <div className="hero-content-layer" ref={contentRef}>
           <div id="heroContent" className="hero-content-block">
+
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-mediavisual-trasp.png"
+              alt="Mediavisual"
+              className="hero-logo"
+            />
 
             <h1 className="hero-headline">
               il tuo brand,<br />

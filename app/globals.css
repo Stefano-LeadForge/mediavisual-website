@@ -114,6 +114,7 @@ body::before {
   height: auto;
   max-height: 80vh;
   max-width: 90vw;
+  margin-top: 8vh;
   user-select: none;
   will-change: transform, opacity;
 }
@@ -162,28 +163,6 @@ body::before {
   display: flex; align-items: center; gap: 1.5rem;
 }
 
-/* ── CRT SCANLINE ──────────────────────────────────────────────────── */
-.hero-scanline {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(200,192,176,0.4) 15%,
-    rgba(255,255,255,0.95) 50%,
-    rgba(200,192,176,0.4) 85%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 6px  rgba(255,255,255,0.6),
-    0 0 20px rgba(200,192,176,0.4),
-    0 0 60px rgba(200,192,176,0.12);
-  z-index: 50;
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
 
 /* ══════════════════════════
    NAV — animato (solo home)
@@ -213,7 +192,7 @@ body::before {
   text-decoration: none;
 }
 .nav-logo-img {
-  height: 36px;
+  height: 46px;
   width: auto;
   display: block;
   filter: brightness(1.1);
@@ -487,7 +466,7 @@ body::before {
 }
 .static-header-logo { display: flex; align-items: center; text-decoration: none; }
 .static-logo-img {
-  height: 36px;
+  height: 46px;
   width: auto;
   display: block;
   filter: brightness(1.1);
@@ -802,7 +781,7 @@ body::before {
   .hamburger { display: flex; }
 
   .hero-section { height: 100svh; }
-  .hero-stand-img { max-height: 55vh; }
+  .hero-stand-img { max-height: 72vh; margin-top: 18vh; }
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
 

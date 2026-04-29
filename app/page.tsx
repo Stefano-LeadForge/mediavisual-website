@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, animate } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, animate, transform as fmTransform } from 'framer-motion';
 import { useLenis } from '@/components/SmoothScrolling';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -27,13 +27,15 @@ export default function HomePage() {
 
   const { scrollY } = useScroll();
 
-  /* Non-linear scale: slow 1→1.3 nella prima metà, poi accelera a 8 */
-  const scrollScale = useTransform(
-    scrollY,
-    [0, 120, 240, 360, 480],
-    [1, 1.07, 1.3, 3.5, 8],
-    { clamp: true },
-  );
+  /* Non-linear scale: desktop veloce, mobile molto più lento */
+  const scrollScale = useTransform(() => {
+    const sy  = scrollY.get();
+    const mob = typeof window !== 'undefined' && window.innerWidth < 768;
+    const out = mob
+      ? [1, 1.02, 1.06, 1.20, 1.60]   /* mobile: zoom leggero */
+      : [1, 1.07, 1.30, 3.50, 8.00];  /* desktop: zoom drammatico */
+    return fmTransform(sy, [0, 120, 240, 360, 480], out, { clamp: true });
+  });
 
 
   useEffect(() => {
@@ -64,7 +66,6 @@ export default function HomePage() {
     /* ── POWER-ON ENTRANCE ─────────────────────────────────────────────── */
     gsap.set('#nav',         { opacity: 0, y: -12 });
     gsap.set('#heroContent', { opacity: 0, y: 40  });
-    gsap.set('#scanline',    { y: 0, opacity: 0   });
 
     if (isScrolled) {
       gsap.set('#nav',         { opacity: 1, y: 0 });
@@ -72,9 +73,6 @@ export default function HomePage() {
     } else {
       gsap.timeline({ defaults: { ease: 'power3.out' } })
         .to('#nav',         { opacity: 1, y: 0, duration: 0.9 }, 0)
-        .to('#scanline',    { opacity: 1, duration: 0.05 }, 0.2)
-        .to('#scanline',    { y: '100vh', duration: 1.2, ease: 'power2.inOut' }, 0.2)
-        .to('#scanline',    { opacity: 0, duration: 0.08 }, 1.38)
         .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
     }
 
@@ -200,9 +198,6 @@ export default function HomePage() {
           ScrollTrigger pinna la sezione per 480px di scroll effettivo.
       ══ */}
       <section className="hero-section" ref={heroRef} id="heroSection">
-
-        {/* CRT scanline entrance */}
-        <div className="hero-scanline" id="scanline" aria-hidden="true" />
 
         {/* ── Layer 1: centro commerciale ── */}
         {/* eslint-disable-next-line @next/next/no-img-element */}

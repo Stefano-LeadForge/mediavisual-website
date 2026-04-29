@@ -31,29 +31,28 @@ export default function HomePage() {
 
   const { scrollY } = useScroll();
 
-  /* Non-linear scale: desktop 480 px, mobile 900 px (più lento, riempie lo schermo) */
+  /* Non-linear scale: desktop 300 px, mobile 520 px — pin termina quando lo stand riempie lo schermo */
   const scrollScale = useTransform(() => {
     const sy  = scrollY.get();
     const mob = typeof window !== 'undefined' && window.innerWidth < 768;
     if (mob) {
-      /* 900 px totali → zoom lento ma completo fino a riempire lo schermo */
-      return fmTransform(sy, [0, 225, 450, 675, 900], [1, 1.30, 2.00, 3.50, 5.50], { clamp: true });
+      return fmTransform(sy, [0, 130, 260, 390, 520], [1, 1.30, 2.00, 3.50, 5.50], { clamp: true });
     }
-    return fmTransform(sy, [0, 120, 240, 360, 480], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
+    return fmTransform(sy, [0, 75, 150, 225, 300], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
   });
 
   /* Arrow: scala lievissima + sparisce presto */
   const arrowScale = useTransform(() => {
     const sy  = scrollY.get();
     const mob = typeof window !== 'undefined' && window.innerWidth < 768;
-    return fmTransform(sy, [0, mob ? 150 : 80], [1, 1.05], { clamp: true });
+    return fmTransform(sy, [0, mob ? 90 : 50], [1, 1.05], { clamp: true });
   });
 
   const arrowOpacity = useTransform(() => {
     const sy        = scrollY.get();
     const mob       = typeof window !== 'undefined' && window.innerWidth < 768;
-    const fadeStart = mob ? 80  : 40;
-    const fadeEnd   = mob ? 260 : 130;
+    const fadeStart = mob ? 50  : 25;
+    const fadeEnd   = mob ? 150 : 80;
     const scrollFade = sy <= fadeStart ? 1 : fmTransform(sy, [fadeStart, fadeEnd], [1, 0], { clamp: true });
     return arrowOpacityEntrance.get() * scrollFade;
   });
@@ -111,8 +110,8 @@ export default function HomePage() {
       .to(mallBgRef.current,       { scale: 1.10, opacity: 0.3, duration: 1, ease: 'none' }, 0)
       .to(whiteOverlayRef.current, { opacity: 1, duration: 0.6, ease: 'power2.in' }, 0.40);
 
-    /* Pin più lungo su mobile per rallentare lo zoom stand */
-    const pinDist = window.innerWidth < 768 ? 900 : 480;
+    /* Pin termina quando lo stand riempie lo schermo */
+    const pinDist = window.innerWidth < 768 ? 520 : 300;
 
     const st = ScrollTrigger.create({
       trigger:   heroRef.current,
@@ -144,7 +143,6 @@ export default function HomePage() {
         gsap.to(window, { scrollTo: { y: '#nextSection', autoKill: false }, duration: 1.4, ease: 'power2.inOut' });
       }
     }
-    document.getElementById('ctaScroll')?.addEventListener('click', scrollToNext);
     arrowRef.current?.addEventListener('click', scrollToNext);
 
     /* ── MOBILE MENU ── */
@@ -183,7 +181,6 @@ export default function HomePage() {
       st.kill();
       tl.kill();
       window.removeEventListener('scroll', onNavScroll);
-      document.getElementById('ctaScroll')?.removeEventListener('click', scrollToNext);
       arrowRef.current?.removeEventListener('click', scrollToNext);
       hamburgerEl?.removeEventListener('click', onHamburgerClick);
       document.body.style.overflow = '';
@@ -284,8 +281,8 @@ export default function HomePage() {
           transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
         >
           <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="25" cy="25" r="23" stroke="black" stroke-width="1.5" />
-            <polyline points="15,21 25,31 35,21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="25" cy="25" r="23" stroke="black" strokeWidth="1.5" />
+            <polyline points="15,21 25,31 35,21" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </motion.button>
 
@@ -312,14 +309,6 @@ export default function HomePage() {
               <a href="/contatti" className="cta-primary">
                 <span>Richiedi un Progetto</span>
                 <span className="arr" />
-              </a>
-              <a
-                href="#nextSection"
-                className="hero-scroll-arrow"
-                id="ctaScroll"
-                aria-label="Scorri alla sezione successiva"
-              >
-                <span className="hero-scroll-arrow-icon" />
               </a>
             </div>
 

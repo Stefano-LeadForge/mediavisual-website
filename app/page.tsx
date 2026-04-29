@@ -8,38 +8,82 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin);
 
+/* ── PANEL GEOMETRY (must match --panel-inset in globals.css) ──────────
+   Pannello bianco del totem in hero-stand.png:
+     left 18% · right 50% · top 10% · bottom 90%
+     center X = 34%  ·  center Y = 50%
+   Scale minima per coprire il viewport (bordo destro): (100-34)/16 = 4.1×
+   Si usa 5.5× per margine.
+──────────────────────────────────────────────────────────────────────── */
+const PANEL = { top: 10, right: 50, bottom: 10, left: 18 } as const;
+
+/** Lerp lineare */
+function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+
+/** Ease-out cubic */
+function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
+
 export default function HomePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const lenisCtx     = useLenis();
   const lenisRef     = useRef(lenisCtx);
   lenisRef.current   = lenisCtx;
 
-  /* ── FRAMER MOTION: scroll-driven zoom ──────────────────────────────────
-     containerRef è il div outer (250vh).
+  /* ── FRAMER MOTION: scroll progress ────────────────────────────────────
      offset ['start start', 'end end']:
        0 = top del container allineato al top del viewport
        1 = bottom del container allineato al bottom del viewport
-     → l'animazione dura ~150vh di scroll reale.
-  ─────────────────────────────────────────────────────────────────────── */
+     Con container 250vh e viewport 100vh → animazione su 150vh di scroll.
+  ────────────────────────────────────────────────────────────────────── */
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end end'],
   });
 
-  /* ── ZOOM verso il rettangolo bianco del totem ──────────────────────────
-     Con object-position = transformOrigin = --hero-zoom-origin (36% 44%),
-     il punto fisso dello zoom coincide esattamente con il centro del totem.
-     scale 1 → 6: calcolato geometricamente perché il bianco (28% larghezza
-     immagine) a 6× copre il 100% del viewport.
-     Se il bianco non copre: aumenta maxScale. Se copre troppo presto: riduci.
+  /* ── ZOOM verso il pannello bianco del totem ────────────────────────────
+     transformOrigin = object-position = --hero-zoom-origin (34% 50%).
+     Il CSS garantisce che il punto 34%/50% dell'immagine coincida
+     esattamente con il punto 34%/50% del viewport → zoom matematicamente
+     centrato sul pannello.
+     Scale 5.5: il bordo destro del pannello (50%) raggiunge il 100% del
+     viewport a scale ≈ 4.1; 5.5 garantisce piena copertura.
   ─────────────────────────────────────────────────────────────────────── */
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 6]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 5.5]);
 
-  /* Testo: opacity 1 → 0 nel primo 35% dello scroll */
+  /* Testo hero: opacity 1 → 0 nel primo 35% dello scroll */
   const textOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
 
   /* Scroll cue: scompare nel primo 12% */
   const cueOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
+
+  /* ── PANEL BURST: clip-path inset() da rettangolo-pannello a viewport ────
+     La clip parte identica ai bordi del pannello bianco nel totem.
+     Mentre l'utente scorre:
+       – l'immagine di sfondo ha già riempito il viewport di bianco (scale > 4)
+       – il burst si apre come un'iride, rivelando la sezione successiva
+     Il teaser (testo dentro la clip iniziale) crea l'effetto "anteprima
+     nello schermo del totem".
+
+     Timing:
+       0.55 → 1.00  clip si apre (45% dello scroll travel = ~67vh)
+       0.52 → 0.65  teaser appare in fade-in
+       0.85 → 0.98  teaser scompare in fade-out (prima del passaggio sezione)
+  ─────────────────────────────────────────────────────────────────────── */
+  const burstClipPath = useTransform(scrollYProgress, (p: number) => {
+    const t  = Math.max(0, Math.min(1, (p - 0.55) / 0.45));
+    const te = easeOut(t);
+    const top   = lerp(PANEL.top,    0, te).toFixed(2);
+    const right = lerp(PANEL.right,  0, te).toFixed(2);
+    const bot   = lerp(PANEL.bottom, 0, te).toFixed(2);
+    const left  = lerp(PANEL.left,   0, te).toFixed(2);
+    return `inset(${top}% ${right}% ${bot}% ${left}%)`;
+  });
+
+  const teaserOpacity = useTransform(
+    scrollYProgress,
+    [0.52, 0.65, 0.85, 0.98],
+    [0, 1, 1, 0],
+  );
 
   useEffect(() => {
     /* ── REDUCED MOTION ── */
@@ -66,11 +110,6 @@ export default function HomePage() {
          0.0s  → 0.9s : Nav scende dall'alto
          0.2s  → 1.4s : Scanline CRT wipe
          1.1s  → 2.1s : Logo + titolo si elevano in blocco
-
-       ── COME MODIFICARE ──
-       Per rimuovere la scanline: cancella i 3 .to('#scanline', ...)
-         e il div .hero-scanline nel JSX.
-       Per cambiare timing: modifica l'offset float in ogni .to().
     ═══════════════════════════════════════════════════════════════════ */
     gsap.timeline({ defaults: { ease: 'power3.out' } })
       .to('#nav',         { opacity: 1, y: 0, duration: 0.9 }, 0)
@@ -178,17 +217,11 @@ export default function HomePage() {
           containerRef (250vh) crea lo scroll room per Framer Motion.
           hero-sticky-inner rimane fisso mentre il container scorre.
 
-          ── CALIBRAZIONE PUNTO DI ZOOM ──────────────────────────────────────
-          La variabile CSS --hero-zoom-origin controlla il transformOrigin
-          dell'immagine, cioè il punto verso cui lo zoom converge.
-
-          Per trovare le coordinate esatte del rettangolo bianco del totem:
-          1. Apri DevTools → ispeziona l'immagine
-          2. Misura la posizione del centro del rettangolo bianco
-             come % della larghezza e altezza totale dell'immagine
-          3. Aggiorna --hero-zoom-origin nel :root di globals.css
-
-          Valori di default: 68% 48% (da calibrare sull'immagine reale)
+          ── COME CALIBRARE ──────────────────────────────────────────────────
+          1. Apri DevTools, ispeziona .hero-zoom-img
+          2. Misura il centro del pannello bianco come % di width/height
+          3. Aggiorna --hero-zoom-origin e PANEL in page.tsx
+          4. Aggiorna --panel-inset in globals.css con i nuovi bordi
       ══ */}
       <div ref={containerRef} className="hero-scroll-container">
         <div className="hero-sticky-inner">
@@ -196,14 +229,16 @@ export default function HomePage() {
           {/* CRT scanline — power-on entrance */}
           <div className="hero-scanline" id="scanline" aria-hidden="true" />
 
-          {/* ── BACKGROUND: Framer Motion scrub zoom ──
-              willChange:'transform' forza il compositing su GPU.
-              transformOrigin punta al rettangolo bianco del totem. */}
+          {/* ── BACKGROUND: zoom verso il pannello bianco ─────────────────
+              object-position = transformOrigin = --hero-zoom-origin:
+              lo stesso punto fisso garantisce che il pannello bianco sia
+              sempre il baricentro dello zoom, indipendentemente dalle
+              dimensioni del viewport. */}
           <motion.div
             className="hero-zoom-bg"
             style={{
               scale,
-              transformOrigin: 'var(--hero-zoom-origin, 68% 48%)',
+              transformOrigin: 'var(--hero-zoom-origin, 34% 50%)',
               willChange: 'transform',
             }}
           >
@@ -225,8 +260,6 @@ export default function HomePage() {
           <motion.div className="hero-content-layer" style={{ opacity: textOpacity }}>
             <div id="heroContent" className="hero-content-block">
 
-              {/* Logo brand — reso bianco via CSS filter */}
-              {/* Sostituire con <img src="/logo-mediavisual.jpeg" /> all'arrivo del file */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo-mediavisual.jpeg"
@@ -234,13 +267,11 @@ export default function HomePage() {
                 className="hero-logo"
               />
 
-              {/* Headline principale */}
               <h1 className="hero-headline">
                 il tuo brand,<br />
                 <em>al centro dell&apos;attenzione.</em>
               </h1>
 
-              {/* CTA */}
               <div className="hero-cta-row">
                 <a href="/contatti" className="cta-primary">
                   <span>Richiedi un Progetto</span>
@@ -265,12 +296,40 @@ export default function HomePage() {
             <div className="scroll-cue-line" />
           </motion.div>
 
+          {/* ══ PANEL BURST ═══════════════════════════════════════════════
+              Il clip-path inset() parte dai bordi esatti del pannello bianco
+              del totem e si apre fino a coprire l'intero viewport.
+
+              Mentre l'immagine di sfondo zooma verso il pannello (z-index 0),
+              il burst overlay (z-index 25) si apre dalla stessa area con un
+              clip animato, rivelando il contenuto della sezione successiva.
+
+              Il .hero-panel-teaser è posizionato DENTRO i bordi iniziali
+              del clip (18–50% X, 10–90% Y), così appare come anteprima
+              "nello schermo del totem" durante l'apertura.
+          ══ */}
+          <motion.div
+            className="hero-panel-burst"
+            style={{ clipPath: burstClipPath }}
+            aria-hidden="true"
+          >
+            <motion.div className="hero-panel-teaser" style={{ opacity: teaserOpacity }}>
+              <div className="section-eyebrow">
+                <div className="section-eyebrow-line" />
+                <span className="section-eyebrow-text">Chi Siamo</span>
+              </div>
+              <h2 className="section-title">
+                Progettiamo e installiamo<br />strutture ad alto impatto visivo.
+              </h2>
+            </motion.div>
+          </motion.div>
+
         </div>
       </div>
 
       {/* ══ PRIMA SEZIONE ════════════════════════════════════════════════
           #nextSection è il target dello scroll-arrow e il confine
-          post-zoom. Inserire qui le sezioni di contenuto.
+          post-zoom. Il background bianco continua dal burst overlay.
       ══ */}
       <section className="next-section" id="nextSection">
         <div className="section-eyebrow">

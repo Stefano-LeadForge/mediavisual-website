@@ -59,24 +59,24 @@ body::before {
 .home-page { min-height: 100vh; }
 
 /* ── CALIBRAZIONE ZOOM ─────────────────────────────────────────────────
-   Aggiorna --hero-zoom-origin con le coordinate (X% Y%) del centro del
-   rettangolo bianco del totem in hero-stand.png.
-   Default: 68% 48% — da calibrare sull'immagine reale.
+   --hero-zoom-origin  = centro del pannello bianco del totem (X% Y%)
+                         Usato sia da object-position che da transformOrigin:
+                         il CSS garantisce che i due valori corrispondano
+                         alla STESSA posizione fisica nell'immagine e nel viewport.
+
+   --panel-inset       = bordi del pannello bianco in formato inset()
+                         (top right bottom left, misurati dai bordi del viewport)
+                         Usato per il burst clip-path di apertura.
+
+   Geometria pannello (hero-stand.png):
+     ← left 18% · right 50% → center X 34%
+     ↑ top  10% · bottom 90% → center Y 50%
+   Scala minima per coprire il viewport (bordo destro → 100%):
+     (100 - 34) / 16 = 4.13 → si usa 5.5 per margine.
 ─────────────────────────────────────────────────────────────────────── */
 :root {
-  /*
-   * CALIBRAZIONE ZOOM HERO
-   * Entrambi i valori devono essere identici: object-position e transformOrigin
-   * usano la stessa coppia di percentuali, che CSS garantisce corrispondano
-   * alla stessa posizione nell'immagine e nel viewport.
-   *
-   * Come trovare i valori precisi:
-   *   Apri DevTools → ispeziona .hero-zoom-img → misura il centro del
-   *   rettangolo bianco come % della larghezza e altezza dell'elemento.
-   *
-   * Default: 36% 44% (centro stimato del totem in hero-stand.png)
-   */
-  --hero-zoom-origin: 36% 44%;
+  --hero-zoom-origin: 34% 50%;
+  --panel-inset: 10% 50% 10% 18%;   /* inset(top right bottom left) = pannello bianco */
 }
 
 /* Outer: crea lo scroll room per l'animazione Framer Motion */
@@ -127,6 +127,39 @@ body::before {
     transparent 68%
   );
 }
+
+/* ── PANEL BURST OVERLAY ─────────────────────────────────────────────
+   Rettangolo bianco che parte dal pannello del totem e si apre fino a
+   coprire l'intero viewport. Il clip-path inset() è animato da Framer
+   Motion (page.tsx: burstClipPath).
+
+   Valore iniziale: var(--panel-inset) = inset(10% 50% 10% 18%)
+     → mostra solo l'area del pannello bianco del totem
+   Valore finale:   inset(0% 0% 0% 0%)
+     → copre l'intero viewport, rivelando la sezione successiva
+
+   .hero-panel-teaser — contenuto posizionato DENTRO i bordi iniziali
+   del clip, così appare come anteprima nello "schermo" del totem.
+─────────────────────────────────────────────────────────────────────── */
+.hero-panel-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  background: #ffffff;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Anteprima contenuto — posizionata nel pannello iniziale (18–50% X, 10–90% Y) */
+.hero-panel-teaser {
+  position: absolute;
+  left: 19%;
+  top: 13%;
+  width: 28%;
+  pointer-events: none;
+}
+.hero-panel-teaser .section-eyebrow { margin-bottom: 1rem; }
+.hero-panel-teaser .section-title   { font-size: clamp(1rem, 2.1vw, 2rem); max-width: 100%; }
 
 /* Layer Framer Motion per l'opacity scroll-driven */
 .hero-content-layer {

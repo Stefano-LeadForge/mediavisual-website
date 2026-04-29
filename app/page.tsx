@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform, useMotionValue, animate } from 'framer-motion';
 import { useLenis } from '@/components/SmoothScrolling';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -20,11 +21,52 @@ export default function HomePage() {
   const scrollCueRef    = useRef<HTMLDivElement>(null);
   const whiteOverlayRef = useRef<HTMLDivElement>(null);
 
+  /* ── STAND: Framer Motion entrance + scroll zoom ── */
+  const standOpacityEntrance = useMotionValue(0);
+  const standY               = useMotionValue(20);
+
+  const { scrollY } = useScroll();
+
+  /* Non-linear scale: slow 1→1.3 nella prima metà, poi accelera a 8 */
+  const scrollScale = useTransform(
+    scrollY,
+    [0, 120, 240, 360, 480],
+    [1, 1.07, 1.3, 3.5, 8],
+    { clamp: true },
+  );
+
+  /* Fade-out attivo solo nella fase veloce finale */
+  const scrollFade = useTransform(scrollY, [270, 460], [1, 0], { clamp: true });
+
+  /* Opacità combinata: min(entrance, scrollFade) */
+  const standOpacity = useTransform(
+    [standOpacityEntrance, scrollFade],
+    ([entry, fade]: number[]) => Math.min(entry, fade),
+  );
+
   useEffect(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isScrolled     = window.scrollY > 0;
+
+    /* ── STAND ENTRANCE (Framer Motion) ── */
+    let entranceTimeout: ReturnType<typeof setTimeout> | null = null;
+    if (prefersReduced || isScrolled) {
+      standOpacityEntrance.set(1);
+      standY.set(0);
+    } else {
+      /* Appare 300 ms dopo heroContent (che inizia a t=1.1 s) */
+      entranceTimeout = setTimeout(() => {
+        animate(standOpacityEntrance, 1, { duration: 1.0, ease: [0.23, 1, 0.32, 1] });
+        animate(standY,               0, { duration: 1.0, ease: [0.23, 1, 0.32, 1] });
+      }, 1400);
+    }
+
     /* ── REDUCED MOTION ── */
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (prefersReduced) {
       gsap.set(['#nav', '#heroContent'], { opacity: 1, y: 0 });
-      return;
+      return () => {
+        if (entranceTimeout !== null) clearTimeout(entranceTimeout);
+      };
     }
 
     /* ── POWER-ON ENTRANCE ─────────────────────────────────────────────── */
@@ -32,7 +74,7 @@ export default function HomePage() {
     gsap.set('#heroContent', { opacity: 0, y: 40  });
     gsap.set('#scanline',    { y: 0, opacity: 0   });
 
-    if (window.scrollY > 0) {
+    if (isScrolled) {
       gsap.set('#nav',         { opacity: 1, y: 0 });
       gsap.set('#heroContent', { opacity: 1, y: 0 });
     } else {
@@ -114,6 +156,7 @@ export default function HomePage() {
     hamburgerEl?.addEventListener('click', onHamburgerClick);
 
     return () => {
+      if (entranceTimeout !== null) clearTimeout(entranceTimeout);
       st.kill();
       tl.kill();
       window.removeEventListener('scroll', onNavScroll);
@@ -121,6 +164,7 @@ export default function HomePage() {
       hamburgerEl?.removeEventListener('click', onHamburgerClick);
       document.body.style.overflow = '';
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -181,15 +225,17 @@ export default function HomePage() {
         {/* Gradiente scuro sinistra per leggibilità testo */}
         <div className="hero-tint" aria-hidden="true" />
 
-        {/* ── Layer 2: stand centrato ── */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero-stand-trasp.png"
-          alt="Stand pubblicitario Mediavisual"
-          className="hero-stand-center"
-          aria-hidden="true"
-          draggable={false}
-        />
+        {/* ── Layer 2: stand centrato — animato con Framer Motion ── */}
+        <div className="hero-stand-positioner" aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <motion.img
+            src="/hero-stand-trasp.png"
+            alt=""
+            className="hero-stand-img"
+            draggable={false}
+            style={{ scale: scrollScale, opacity: standOpacity, y: standY }}
+          />
+        </div>
 
         {/* ── White overlay ──────────────────────────────────────────────────
             Parte trasparente, fade-in al 40% dello scroll.

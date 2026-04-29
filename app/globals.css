@@ -96,18 +96,24 @@ body::before {
   );
 }
 
-/* ── LAYER 2: stand centrato nell'hero ── */
-.hero-stand-center {
+/* ── LAYER 2: stand centrato nell'hero ──
+   Il wrapper usa flexbox per il centramento (nessun transform sul container)
+   così Framer Motion può gestire liberamente scale/y/opacity sull'img interna. */
+.hero-stand-positioner {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.hero-stand-img {
   height: 80vh;
   width: auto;
   max-width: 90vw;
-  pointer-events: none;
   user-select: none;
+  will-change: transform, opacity;
 }
 
 .hero-white-overlay {
@@ -381,7 +387,7 @@ body::before {
 }
 
 /* GPU hint */
-.hero-stand-center, .hero-mall-bg { backface-visibility: hidden; }
+.hero-stand-img, .hero-mall-bg { backface-visibility: hidden; }
 
 /* ══════════════════════════════════════════
    PRIMA SEZIONE DOPO HERO (#nextSection)
@@ -803,7 +809,7 @@ body::before {
   .hamburger { display: flex; }
 
   .hero-section { height: 100svh; }
-  .hero-stand-center { height: 55vh; }
+  .hero-stand-img { height: 55vh; }
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
   .hero-logo { width: clamp(80px, 28vw, 140px); }

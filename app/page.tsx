@@ -27,14 +27,15 @@ export default function HomePage() {
 
   const { scrollY } = useScroll();
 
-  /* Non-linear scale: desktop veloce, mobile molto più lento */
+  /* Non-linear scale: desktop 480 px, mobile 900 px (più lento, riempie lo schermo) */
   const scrollScale = useTransform(() => {
     const sy  = scrollY.get();
     const mob = typeof window !== 'undefined' && window.innerWidth < 768;
-    const out = mob
-      ? [1, 1.02, 1.06, 1.20, 1.60]   /* mobile: zoom leggero */
-      : [1, 1.07, 1.30, 3.50, 8.00];  /* desktop: zoom drammatico */
-    return fmTransform(sy, [0, 120, 240, 360, 480], out, { clamp: true });
+    if (mob) {
+      /* 900 px totali → zoom lento ma completo fino a riempire lo schermo */
+      return fmTransform(sy, [0, 225, 450, 675, 900], [1, 1.30, 2.00, 3.50, 5.50], { clamp: true });
+    }
+    return fmTransform(sy, [0, 120, 240, 360, 480], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
   });
 
 
@@ -83,10 +84,13 @@ export default function HomePage() {
       .to(mallBgRef.current,       { scale: 1.10, opacity: 0.3, duration: 1, ease: 'none' }, 0)
       .to(whiteOverlayRef.current, { opacity: 1, duration: 0.6, ease: 'power2.in' }, 0.40);
 
+    /* Pin più lungo su mobile per rallentare lo zoom stand */
+    const pinDist = window.innerWidth < 768 ? 900 : 480;
+
     const st = ScrollTrigger.create({
       trigger:   heroRef.current,
       start:     'top top',
-      end:       '+=480',           /* 480px di scroll effettivo */
+      end:       `+=${pinDist}`,
       pin:       true,
       scrub:     0.5,
       animation: tl,
@@ -199,16 +203,19 @@ export default function HomePage() {
       ══ */}
       <section className="hero-section" ref={heroRef} id="heroSection">
 
-        {/* ── Layer 1: centro commerciale ── */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          ref={mallBgRef}
-          src="/hero-mall.png"
-          alt=""
-          className="hero-mall-bg"
-          aria-hidden="true"
-          draggable={false}
-        />
+        {/* ── Layer 1: centro commerciale — desktop/mobile responsive ── */}
+        <picture>
+          <source media="(max-width: 767px)" srcSet="/hero-mall-mobile.png" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            ref={mallBgRef}
+            src="/hero-mall-desktop.png"
+            alt=""
+            className="hero-mall-bg"
+            aria-hidden="true"
+            draggable={false}
+          />
+        </picture>
 
         {/* Gradiente scuro sinistra per leggibilità testo */}
         <div className="hero-tint" aria-hidden="true" />

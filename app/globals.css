@@ -163,11 +163,12 @@ body::before {
   display: flex; align-items: center; gap: 1.5rem;
 }
 
-/* ── Freccia scroll stand: desktop centra sulla stand (margin-top: 11vh → centro a ~61vh) ── */
+/* ── Freccia scroll stand ── */
 .hero-arrow-down {
   position: absolute;
   left: 50%;
-  top: 61%;
+  top: 53%;
+  opacity: 0; /* GSAP anima l'ingresso */
   transform: translateX(-50%);
   z-index: 6;
   background: none;
@@ -802,7 +803,7 @@ body::before {
 
   .hero-section { height: 100svh; }
   .hero-stand-img { max-height: 82vh; max-width: none; margin-top: 22vh; }
-  .hero-arrow-down { top: 72%; }
+  .hero-arrow-down { top: 63%; }
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
 

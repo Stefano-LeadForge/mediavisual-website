@@ -60,22 +60,26 @@ export default function HomePage() {
     /* ── REDUCED MOTION ── */
     if (prefersReduced) {
       gsap.set(['#nav', '#heroContent'], { opacity: 1, y: 0 });
+      gsap.set(arrowRef.current, { opacity: 1 });
       return () => {
         if (entranceTimeout !== null) clearTimeout(entranceTimeout);
       };
     }
 
     /* ── POWER-ON ENTRANCE ─────────────────────────────────────────────── */
-    gsap.set('#nav',         { opacity: 0, y: -12 });
-    gsap.set('#heroContent', { opacity: 0, y: 40  });
+    gsap.set('#nav',           { opacity: 0, y: -12 });
+    gsap.set('#heroContent',   { opacity: 0, y: 40  });
+    gsap.set(arrowRef.current, { opacity: 0 });
 
     if (isScrolled) {
-      gsap.set('#nav',         { opacity: 1, y: 0 });
-      gsap.set('#heroContent', { opacity: 1, y: 0 });
+      gsap.set('#nav',           { opacity: 1, y: 0 });
+      gsap.set('#heroContent',   { opacity: 1, y: 0 });
+      gsap.set(arrowRef.current, { opacity: 1 });
     } else {
       gsap.timeline({ defaults: { ease: 'power3.out' } })
-        .to('#nav',         { opacity: 1, y: 0, duration: 0.9 }, 0)
-        .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
+        .to('#nav',           { opacity: 1, y: 0, duration: 0.9 }, 0)
+        .to('#heroContent',   { opacity: 1, y: 0, duration: 1.0 }, 1.1)
+        .to(arrowRef.current, { opacity: 1, duration: 0.7 },        1.9);
     }
 
     /* ── SCROLL ZOOM ── */
@@ -243,9 +247,9 @@ export default function HomePage() {
           className="hero-arrow-down"
           aria-label="Scorri alla sezione successiva"
         >
-          <svg width="40" height="56" viewBox="0 0 40 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="20" y1="2" x2="20" y2="42" stroke="black" strokeWidth="6" strokeLinecap="round" />
-            <path d="M6 30L20 46L34 30" stroke="black" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Triangolo pieno: base larga in alto, punta in basso */}
+          <svg width="64" height="52" viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="2,2 62,2 32,50" fill="black" />
           </svg>
         </button>
 

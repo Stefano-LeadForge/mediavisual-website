@@ -53,33 +53,109 @@ body::before {
   background-size: 256px;
 }
 
-/* ══════════════════════════════
-   STICKY HERO WRAPPER
-══════════════════════════════ */
+/* ══════════════════════════════════════
+   IMMERSIVE ZOOM HERO
+══════════════════════════════════════ */
 .home-page { min-height: 100vh; }
 
-.hero-sticky-wrap {
+/* ── CALIBRAZIONE ZOOM ─────────────────────────────────────────────────
+   Aggiorna --hero-zoom-origin con le coordinate (X% Y%) del centro del
+   rettangolo bianco del totem in hero-stand.png.
+   Default: 68% 48% — da calibrare sull'immagine reale.
+─────────────────────────────────────────────────────────────────────── */
+:root {
+  --hero-zoom-origin: 68% 48%;
+}
+
+/* Outer: crea lo scroll room per l'animazione Framer Motion */
+.hero-scroll-container {
   position: relative;
+  height: 250vh;
+}
+
+/* Inner: rimane fisso mentre il container scorre */
+.hero-sticky-inner {
+  position: sticky;
+  top: 0;
   height: 100vh;
   width: 100%;
   overflow: hidden;
-  z-index: 10;
 }
 
-/* ── HERO BACKGROUND: gradiente industriale caldo + griglia tecnica ── */
-.hero-bg {
-  position: absolute; inset: 0; z-index: 0;
-  background:
-    radial-gradient(ellipse 70% 55% at 55% 40%, #181818 0%, var(--primary) 70%),
-    radial-gradient(ellipse 30% 30% at 5% 90%, #141414 0%, transparent 60%);
+/* Wrapper dell'immagine — Framer Motion gestisce scale e transformOrigin */
+.hero-zoom-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 
-/* Griglia a punti — texture "pannello tecnico" */
-.hero-bg::after {
-  content: '';
-  position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background-image: radial-gradient(circle, rgba(200,192,176,0.07) 1px, transparent 1px);
-  background-size: 36px 36px;
+/* Immagine a tutto schermo */
+.hero-zoom-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Gradiente scuro lato sinistro — garantisce leggibilità del testo */
+.hero-tint {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    rgba(0,0,0,0.65) 0%,
+    rgba(0,0,0,0.38) 42%,
+    transparent 68%
+  );
+}
+
+/* Layer Framer Motion per l'opacity scroll-driven */
+.hero-content-layer {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center;
+  pointer-events: none;
+}
+.hero-content-layer a,
+.hero-content-layer button { pointer-events: auto; }
+
+/* Blocco contenuto — posizionato a sinistra del totem */
+.hero-content-block {
+  padding: 0 clamp(2rem, 6vw, 6rem);
+  max-width: 560px;
+}
+
+/* Logo — reso bianco via filter brightness */
+.hero-logo {
+  display: block;
+  width: clamp(100px, 14vw, 180px);
+  height: auto;
+  margin-bottom: clamp(1.5rem, 3vh, 2.5rem);
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+/* Headline Industrial Luxury — lowercase per contrasto col brand */
+.hero-headline {
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.4rem, 5vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: var(--text);
+  margin-bottom: 2.5rem;
+}
+.hero-headline em {
+  font-style: normal;
+  color: var(--accent);
+  display: block;
+}
+
+/* CTA row */
+.hero-cta-row {
+  display: flex; align-items: center; gap: 1.5rem;
 }
 
 /* ── SCANLINE: effetto accensione CRT ───────────────────────────────────
@@ -228,76 +304,6 @@ body::before {
 }
 .mobile-menu-cta-link:hover { background: var(--accent); border-color: var(--accent); color: var(--primary); }
 
-/* ══════════════════════════════
-   HERO LAYOUT
-══════════════════════════════ */
-.hero-inner {
-  position: absolute; inset: 0; z-index: 15;
-  display: flex; flex-direction: column;
-  pointer-events: none;
-}
-.hero-cta-group, .hero-scroll-arrow { pointer-events: auto; }
-
-.hero-top {
-  flex: 1; display: flex; align-items: center;
-  padding: 0 3.5rem; padding-top: 7rem;
-}
-
-.hero-text-block { max-width: 620px; }
-
-/* ── EYEBROW ───────────────────────────────────────────────────────────
-   Stato CSS iniziale: opacity:0  (GSAP imposta y:60)
-   Entrance: opacity 1, y 0  — power3.out, t=1.0s nel power-on
-   Scroll dissolve: opacity 0, y -12px — nel buildExpandTl
-─────────────────────────────────────────────────────────────────────── */
-.hero-eyebrow {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 1.75rem;
-  opacity: 0; /* GSAP gestisce y:60 → 0 */
-}
-.eyebrow-line { width: 28px; height: 1px; background: var(--accent); }
-.eyebrow-text {
-  font-size: 9px; font-weight: 400; letter-spacing: 0.44em;
-  text-transform: uppercase; color: var(--accent);
-}
-
-/* ── TITLE ─────────────────────────────────────────────────────────────
-   Stato CSS iniziale: opacity:0  (GSAP imposta y:80, scaleY:0.92)
-   Entrance: opacity 1, y 0, scaleY 1 — power3.out, t=1.15s
-   transform-origin: bottom center — simula la struttura che si eleva.
-
-   Per cambiare l'effetto di elevation:
-   - Più drammatico: aumenta scaleY da 0.92 a 0.80
-   - Più sottile: aumenta scaleY da 0.92 a 0.97
-   - Rimuovi: elimina scaleY dal gsap.set e dal .to in page.tsx
-─────────────────────────────────────────────────────────────────────── */
-.hero-title {
-  font-family: var(--font-barlow), sans-serif;
-  font-weight: 900;
-  font-size: clamp(3.8rem, 8vw, 8rem);
-  line-height: 0.9;
-  letter-spacing: -0.025em;
-  text-transform: uppercase;
-  color: var(--text);
-  margin-bottom: 2.25rem;
-  opacity: 0; /* GSAP gestisce y:80, scaleY:0.92, transformOrigin:bottom center */
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-}
-/* <em> usato per il secondo verso — colore accent, forza line break */
-.hero-title em {
-  font-style: normal;
-  color: var(--accent);
-  display: block;
-}
-
-/* ── CTA GROUP ── */
-.hero-cta-group {
-  display: flex; align-items: center; gap: 1.5rem;
-  opacity: 0; /* GSAP gestisce y:40 → 0 */
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-}
 
 /* CTA primario — sfondo accent pieno */
 .cta-primary {
@@ -589,9 +595,9 @@ body::before {
   .nav-links, .nav-btn { display: none; }
   .hamburger { display: flex; }
 
-  .hero-top { padding: 0 1.5rem; padding-top: 5.5rem; align-items: flex-start; }
-  .hero-eyebrow { margin-bottom: 1rem; }
-  .hero-title { font-size: clamp(3.2rem, 13vw, 5rem); line-height: 0.88; margin-bottom: 1.5rem; }
+  .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
+  .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
+  .hero-logo { width: clamp(80px, 28vw, 140px); }
 
   .next-section { padding: 5rem 1.5rem; }
 
@@ -607,6 +613,3 @@ body::before {
   .inner-hero { padding: 9rem 1.5rem 4rem; }
 }
 
-@media (min-width: 769px) {
-  .hero-title { line-height: 0.88; }
-}

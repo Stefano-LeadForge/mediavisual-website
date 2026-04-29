@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useLenis } from '@/components/SmoothScrolling';
 import gsap from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -8,90 +9,75 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 gsap.registerPlugin(ScrollToPlugin);
 
 export default function HomePage() {
-  const scrollCueRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const lenisCtx     = useLenis();
   const lenisRef     = useRef(lenisCtx);
-  lenisRef.current   = lenisCtx; // sempre aggiornato nelle closure dell'effect
+  lenisRef.current   = lenisCtx;
+
+  /* ── FRAMER MOTION: scroll-driven zoom ──────────────────────────────────
+     containerRef è il div outer (250vh).
+     offset ['start start', 'end end']:
+       0 = top del container allineato al top del viewport
+       1 = bottom del container allineato al bottom del viewport
+     → l'animazione dura ~150vh di scroll reale.
+  ─────────────────────────────────────────────────────────────────────── */
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end end'],
+  });
+
+  /* ── ZOOM verso il rettangolo bianco del totem ──────────────────────────
+     scale 1 → 9: calibra maxScale se il bianco non copre (aumenta) o
+     copre troppo presto (riduci).
+     transformOrigin è impostato via CSS var --hero-zoom-origin.
+  ─────────────────────────────────────────────────────────────────────── */
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 9]);
+
+  /* Testo: opacity 1 → 0 nel primo 35% dello scroll */
+  const textOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
+
+  /* Scroll cue: scompare nel primo 12% */
+  const cueOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
 
   useEffect(() => {
-    const scrollCue = scrollCueRef.current;
-    if (!scrollCue) return;
-    const cue = scrollCue;
-
-    /* ── REDUCED MOTION: salta tutte le animazioni ── */
+    /* ── REDUCED MOTION ── */
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.set(['#nav', '#eyebrow', '#title', '#ctas'], {
-        opacity: 1, y: 0, scaleY: 1, clearProps: 'transform',
-      });
-      cue.classList.add('visible');
+      gsap.set(['#nav', '#heroContent'], { opacity: 1, y: 0, clearProps: 'transform' });
       return;
     }
 
-    /* ── STATO INIZIALE GSAP ────────────────────────────────────────────
-       GSAP possiede tutti i transform degli elementi hero.
-       Non impostare transform via CSS su questi elementi — conflitterebbe.
-       Questi set() definiscono la posizione di partenza dell'animazione.
-    ─────────────────────────────────────────────────────────────────── */
-    gsap.set('#nav',      { opacity: 0, y: -12 });
-    gsap.set('#eyebrow',  { opacity: 0, y: 60 });
-    gsap.set('#title',    { opacity: 0, y: 80, scaleY: 0.92, transformOrigin: 'bottom center' });
-    gsap.set('#ctas',     { opacity: 0, y: 40 });
-    gsap.set('#scanline', { y: 0, opacity: 0 });
+    /* ── STATO INIZIALE ─────────────────────────────────────────────────
+       Solo nav e heroContent — GSAP non tocca l'immagine (gestita da FM).
+    ─────────────────────────────────────────────────────────────────────  */
+    gsap.set('#nav',         { opacity: 0, y: -12 });
+    gsap.set('#heroContent', { opacity: 0, y: 40 });
+    gsap.set('#scanline',    { y: 0, opacity: 0 });
 
-    const isScrolled = window.scrollY > 0;
-
-    if (isScrolled) {
-      /* ── RELOAD SCROLLATO: salta l'animazione, imposta lo stato finale ── */
-      gsap.set('#nav',       { opacity: 1, y: 0 });
-      gsap.set('#eyebrow',   { opacity: 1, y: 0 });
-      gsap.set('#title',     { opacity: 1, y: 0, scaleY: 1 });
-      gsap.set('#ctas',      { opacity: 1, y: 0 });
-      cue.classList.add('visible');
-    } else {
-      /* ═══════════════════════════════════════════════════════════════════
-         POWER-ON SEQUENCE — "schermo LED che si accende"
-
-         Fasi:
-           0.0s  → 0.9s : Nav scende dall'alto (frame primo)
-           0.2s  → 1.4s : Scanline scorre dall'alto in basso (effetto CRT)
-           1.0s  → 1.9s : Eyebrow si eleva (totem che sale)
-           1.15s → 2.2s : Titolo si eleva con scaleY (struttura che si estende)
-           1.45s → 2.2s : CTA group appare
-           2.2s         : Scroll cue diventa visibile
-
-         ── COME MODIFICARE ──
-         Timing: cambia il valore float (offset) alla fine di ogni .to()
-         Easing entrée: power3.out = morbido-fisico; power4.out = più drammatico
-         Scanline: modifica height/box-shadow in globals.css → .hero-scanline
-         Elevation: modifica scaleY (0.92 = sottile, 0.75 = drammatico)
-         Per rimuovere la scanline: elimina il blocco SCANLINE qui sotto
-           e il div .hero-scanline nel JSX.
-      ═══════════════════════════════════════════════════════════════════ */
-      const powerOn = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-      powerOn
-        /* NAV — prima cosa visibile, scende da sopra */
-        .to('#nav', { opacity: 1, y: 0, duration: 0.9 }, 0)
-
-        /* ── SCANLINE: wipe CRT top → bottom ── */
-        .to('#scanline', { opacity: 1, duration: 0.05 }, 0.2)
-        .to('#scanline', { y: '100vh', duration: 1.2, ease: 'power2.inOut' }, 0.2)
-        .to('#scanline', { opacity: 0, duration: 0.08 }, 1.38)
-
-        /* EYEBROW — si eleva come un pannello montato */
-        .to('#eyebrow', { opacity: 1, y: 0, duration: 0.9 }, 1.0)
-
-        /* TITOLO — struttura che si estende verticalmente (scaleY) */
-        .to('#title', { opacity: 1, y: 0, scaleY: 1, duration: 1.1, ease: 'power3.out' }, 1.15)
-
-        /* CTA — ultimo, leggero */
-        .to('#ctas', { opacity: 1, y: 0, duration: 0.7 }, 1.45)
-
-        /* SCROLL CUE — dopo che tutto si è assestato */
-        .add(() => { cue.classList.add('visible'); }, 2.2);
+    if (window.scrollY > 0) {
+      gsap.set('#nav',         { opacity: 1, y: 0 });
+      gsap.set('#heroContent', { opacity: 1, y: 0 });
+      return;
     }
 
-    /* ── NAV: trasparente → solido dopo 50px di scroll ── */
+    /* ═══════════════════════════════════════════════════════════════════
+       POWER-ON SEQUENCE
+         0.0s  → 0.9s : Nav scende dall'alto
+         0.2s  → 1.4s : Scanline CRT wipe
+         1.1s  → 2.1s : Logo + titolo si elevano in blocco
+
+       ── COME MODIFICARE ──
+       Per rimuovere la scanline: cancella i 3 .to('#scanline', ...)
+         e il div .hero-scanline nel JSX.
+       Per cambiare timing: modifica l'offset float in ogni .to().
+    ═══════════════════════════════════════════════════════════════════ */
+    gsap.timeline({ defaults: { ease: 'power3.out' } })
+      .to('#nav',         { opacity: 1, y: 0, duration: 0.9 }, 0)
+      .to('#scanline',    { opacity: 1, duration: 0.05 }, 0.2)
+      .to('#scanline',    { y: '100vh', duration: 1.2, ease: 'power2.inOut' }, 0.2)
+      .to('#scanline',    { opacity: 0, duration: 0.08 }, 1.38)
+      .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
+
+    /* ── NAV: diventa solido dopo 50px di scroll ── */
     const navEl = document.getElementById('nav');
     function onNavScroll() {
       navEl?.classList.toggle('nav--solid', window.scrollY > 50);
@@ -99,13 +85,7 @@ export default function HomePage() {
     window.addEventListener('scroll', onNavScroll, { passive: true });
     onNavScroll();
 
-    /* ── SCROLL CUE: si nasconde allo scroll ── */
-    function onCueScroll() {
-      if (window.scrollY > 20) cue.classList.remove('visible');
-    }
-    window.addEventListener('scroll', onCueScroll, { passive: true });
-
-    /* ── SCROLL TO NEXT: clic sulla scroll-arrow ── */
+    /* ── SCROLL ARROW → #nextSection ── */
     function scrollToNext(e: Event) {
       e.preventDefault();
       const lenis = lenisRef.current;
@@ -152,7 +132,6 @@ export default function HomePage() {
 
     return () => {
       window.removeEventListener('scroll', onNavScroll);
-      window.removeEventListener('scroll', onCueScroll);
       document.getElementById('ctaScroll')?.removeEventListener('click', scrollToNext);
       hamburgerEl?.removeEventListener('click', onHamburgerClick);
       document.body.style.overflow = '';
@@ -161,22 +140,19 @@ export default function HomePage() {
 
   return (
     <div className="home-page">
-      {/* ══ NAV — fixed, fuori da heroWrap per position:fixed corretto ══ */}
+
+      {/* ══ NAV — fixed, fuori dal container hero ════════════════════════ */}
       <nav id="nav">
-        {/* Wordmark testuale — sostituire con logo SVG quando disponibile */}
         <a href="/" className="nav-wordmark" aria-label="Mediavisual — Homepage">
           MEDIA<span>VISUAL</span>
         </a>
-
         <ul className="nav-links">
           <li><a href="/prodotti">Prodotti</a></li>
           <li><a href="/progetti">Progetti</a></li>
           <li><a href="/chi-siamo">Chi Siamo</a></li>
           <li><a href="/contatti">Contatti</a></li>
         </ul>
-
         <a href="/contatti" className="nav-btn">Richiedi Preventivo</a>
-
         <button className="hamburger" id="hamburger" aria-label="Apri menu">
           <span className="hamburger-line" />
           <span className="hamburger-line" />
@@ -185,11 +161,7 @@ export default function HomePage() {
       </nav>
 
       {/* ══ MOBILE MENU OVERLAY ══ */}
-      <div
-        className="mobile-menu"
-        id="mobileMenu"
-        style={{ pointerEvents: 'none', opacity: 0 }}
-      >
+      <div className="mobile-menu" id="mobileMenu" style={{ pointerEvents: 'none', opacity: 0 }}>
         <ul className="mobile-menu-list">
           <li><a href="/prodotti"  className="mobile-menu-link">Prodotti</a></li>
           <li><a href="/progetti"  className="mobile-menu-link">Progetti</a></li>
@@ -200,104 +172,103 @@ export default function HomePage() {
         <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>
       </div>
 
-      {/* ══ HERO ═════════════════════════════════════════════════════════
-          DOM IDs richiesti dall'engine GSAP — NON rinominare né rimuovere:
-          #heroWrap    → container hero
-          #eyebrow     → animato dalla Power-On sequence
-          #title       → animato dalla Power-On sequence (scaleY elevation)
-          #ctas        → animato dalla Power-On sequence
-          #scrollCue   → indicatore scroll
-          #nextSection → sezione successiva (target dello scroll-arrow)
+      {/* ══ IMMERSIVE ZOOM HERO ══════════════════════════════════════════════
+          containerRef (250vh) crea lo scroll room per Framer Motion.
+          hero-sticky-inner rimane fisso mentre il container scorre.
+
+          ── CALIBRAZIONE PUNTO DI ZOOM ──────────────────────────────────────
+          La variabile CSS --hero-zoom-origin controlla il transformOrigin
+          dell'immagine, cioè il punto verso cui lo zoom converge.
+
+          Per trovare le coordinate esatte del rettangolo bianco del totem:
+          1. Apri DevTools → ispeziona l'immagine
+          2. Misura la posizione del centro del rettangolo bianco
+             come % della larghezza e altezza totale dell'immagine
+          3. Aggiorna --hero-zoom-origin nel :root di globals.css
+
+          Valori di default: 68% 48% (da calibrare sull'immagine reale)
       ══ */}
-      <div className="hero-sticky-wrap" id="heroWrap">
+      <div ref={containerRef} className="hero-scroll-container">
+        <div className="hero-sticky-inner">
 
-        {/* Sfondo: gradiente industriale + griglia a punti (via CSS ::after) */}
-        <div className="hero-bg" />
+          {/* CRT scanline — power-on entrance */}
+          <div className="hero-scanline" id="scanline" aria-hidden="true" />
 
-        {/* ── SCANLINE ─────────────────────────────────────────────────────
-            Effetto CRT power-on. GSAP anima y: 0 → 100vh.
-            Per rimuovere: elimina questo div e il blocco "SCANLINE" nel useEffect.
-            Per cambiare colore/spessore: vedi .hero-scanline in globals.css.
-        ─────────────────────────────────────────────────────────────────── */}
-        <div className="hero-scanline" id="scanline" aria-hidden="true" />
+          {/* ── BACKGROUND: Framer Motion scrub zoom ──
+              willChange:'transform' forza il compositing su GPU.
+              transformOrigin punta al rettangolo bianco del totem. */}
+          <motion.div
+            className="hero-zoom-bg"
+            style={{
+              scale,
+              transformOrigin: 'var(--hero-zoom-origin, 68% 48%)',
+              willChange: 'transform',
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hero-stand.png"
+              alt="Mediavisual — stand pubblicitario"
+              className="hero-zoom-img"
+              draggable={false}
+            />
+          </motion.div>
 
-        {/* ── HERO TEXT LAYER ── */}
-        <div className="hero-inner">
-          <div className="hero-top">
-            <div className="hero-text-block">
+          {/* Gradiente scuro lato sinistro — leggibilità testo */}
+          <div className="hero-tint" />
 
-              {/* EYEBROW — GSAP: parte da y:60, opacity:0 */}
-              <div className="hero-eyebrow" id="eyebrow">
-                <div className="eyebrow-line" />
-                <span className="eyebrow-text">Totem · Stand · Display</span>
-              </div>
+          {/* ── CONTENT: opacity guidata dallo scroll (FM) ──
+              L'inner #heroContent è l'obiettivo GSAP per la power-on entrance.
+              I due layer (FM opacity outer / GSAP opacity inner) non si sovrappongono. */}
+          <motion.div className="hero-content-layer" style={{ opacity: textOpacity }}>
+            <div id="heroContent" className="hero-content-block">
 
-              {/* TITOLO — GSAP: parte da y:80, scaleY:0.92, opacity:0
-                  <em> forza il line-break e colora il secondo verso in accent.
-                  Per cambiare il copy: modifica solo il testo dentro i tag. */}
-              <h1 className="hero-title" id="title">
-                Costruiamo
-                <em>Visibilità.</em>
+              {/* Logo brand — reso bianco via CSS filter */}
+              {/* Sostituire con <img src="/logo-mediavisual.jpeg" /> all'arrivo del file */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-mediavisual.jpeg"
+                alt="Mediavisual"
+                className="hero-logo"
+              />
+
+              {/* Headline principale */}
+              <h1 className="hero-headline">
+                il tuo brand,<br />
+                <em>al centro dell&apos;attenzione.</em>
               </h1>
 
-              {/* CTA — GSAP: parte da y:40, opacity:0 */}
-              <div className="hero-cta-group" id="ctas">
-                <a href="/progetti" className="cta-primary">
-                  <span>Scopri i Progetti</span>
+              {/* CTA */}
+              <div className="hero-cta-row">
+                <a href="/contatti" className="cta-primary">
+                  <span>Richiedi un Progetto</span>
                   <span className="arr" />
                 </a>
                 <a
-                  href="#"
+                  href="#nextSection"
                   className="hero-scroll-arrow"
                   id="ctaScroll"
-                  aria-label="Scorri per vedere il portfolio"
+                  aria-label="Scorri alla sezione successiva"
                 >
                   <span className="hero-scroll-arrow-icon" />
                 </a>
               </div>
 
             </div>
-          </div>
+          </motion.div>
+
+          {/* Scroll cue — Framer Motion gestisce il fade-out */}
+          <motion.div className="scroll-cue visible" style={{ opacity: cueOpacity }}>
+            <span className="scroll-cue-text">Scorri</span>
+            <div className="scroll-cue-line" />
+          </motion.div>
+
         </div>
-
-        {/* ── MEDIA CARD ───────────────────────────────────────────────────
-            Si espande da pannello flottante → fullscreen con lo scroll.
-            Desktop: posizionato al centro-destra (left:58%).
-            Mobile:  metà inferiore del viewport.
-            SOSTITUIRE hero.jpg con un'immagine di totem/LED wall reale.
-        ─────────────────────────────────────────────────────────────────── */}
-        <div className="media-expand-wrap" id="mediaCard">
-          {/* Vignette bordi — effetto "pannello incassato" */}
-          <div className="media-overlay" id="imgOverlay" />
-
-          {/* Wall text — visibile quando l'hero è a fullscreen */}
-          <div className="nh360-wall-text" id="wallText">
-            <span className="nh360-wall-title">
-              I Tuoi Spazi<br />Parlano.
-            </span>
-            <span className="nh360-wall-sub">
-              Soluzioni Display · Dal Progetto all&apos;Installazione
-            </span>
-            <a href="/contatti" className="nh360-wall-btn">
-              <span>Inizia il Progetto</span>
-              <span className="arr" />
-            </a>
-          </div>
-        </div>
-
-        {/* Indicatore scroll */}
-        <div className="scroll-cue" id="scrollCue" ref={scrollCueRef}>
-          <span className="scroll-cue-text">Scorri</span>
-          <div className="scroll-cue-line" />
-        </div>
-
       </div>
-      {/* /hero sticky */}
 
-      {/* ══ PRIMA SEZIONE ══════════════════════════════════════════════════
-          #nextSection è il DOM trigger per l'animazione di uscita dell'hero.
-          Deve esistere nel DOM anche se è vuoto — non rimuoverlo.
-          Inserire qui le sezioni di contenuto (prodotti, progetti, CTA, ecc.)
+      {/* ══ PRIMA SEZIONE ════════════════════════════════════════════════
+          #nextSection è il target dello scroll-arrow e il confine
+          post-zoom. Inserire qui le sezioni di contenuto.
       ══ */}
       <section className="next-section" id="nextSection">
         <div className="section-eyebrow">

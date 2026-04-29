@@ -20,6 +20,7 @@ export default function HomePage() {
   const contentRef      = useRef<HTMLDivElement>(null);
   const scrollCueRef    = useRef<HTMLDivElement>(null);
   const whiteOverlayRef = useRef<HTMLDivElement>(null);
+  const arrowRef        = useRef<HTMLButtonElement>(null);
 
   /* ── STAND: Framer Motion entrance + scroll zoom ── */
   const standOpacityEntrance = useMotionValue(0);
@@ -81,6 +82,7 @@ export default function HomePage() {
     const tl = gsap.timeline({ paused: true })
       .to(contentRef.current,      { opacity: 0, y: -24, duration: 0.35, ease: 'power2.in' }, 0)
       .to(scrollCueRef.current,    { opacity: 0, duration: 0.25, ease: 'power1.in' }, 0)
+      .to(arrowRef.current,        { opacity: 0, duration: 0.25, ease: 'power1.in' }, 0)
       .to(mallBgRef.current,       { scale: 1.10, opacity: 0.3, duration: 1, ease: 'none' }, 0)
       .to(whiteOverlayRef.current, { opacity: 1, duration: 0.6, ease: 'power2.in' }, 0.40);
 
@@ -118,6 +120,7 @@ export default function HomePage() {
       }
     }
     document.getElementById('ctaScroll')?.addEventListener('click', scrollToNext);
+    arrowRef.current?.addEventListener('click', scrollToNext);
 
     /* ── MOBILE MENU ── */
     const hamburgerEl  = document.getElementById('hamburger');
@@ -155,6 +158,7 @@ export default function HomePage() {
       tl.kill();
       window.removeEventListener('scroll', onNavScroll);
       document.getElementById('ctaScroll')?.removeEventListener('click', scrollToNext);
+      arrowRef.current?.removeEventListener('click', scrollToNext);
       hamburgerEl?.removeEventListener('click', onHamburgerClick);
       document.body.style.overflow = '';
     };
@@ -231,6 +235,19 @@ export default function HomePage() {
             style={{ scale: scrollScale, opacity: standOpacityEntrance, y: standY }}
           />
         </div>
+
+        {/* ── Freccia scroll: cliccabile, posizionata al centro dello stand ── */}
+        <button
+          ref={arrowRef}
+          type="button"
+          className="hero-arrow-down"
+          aria-label="Scorri alla sezione successiva"
+        >
+          <svg width="40" height="56" viewBox="0 0 40 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="20" y1="2" x2="20" y2="42" stroke="black" strokeWidth="6" strokeLinecap="round" />
+            <path d="M6 30L20 46L34 30" stroke="black" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
 
         {/* ── White overlay ──────────────────────────────────────────────────
             Parte trasparente, fade-in al 40% dello scroll.

@@ -129,6 +129,8 @@ body::before {
   display: block;
   pointer-events: none;
   user-select: none;
+  /* Il PNG non ha canale alpha reale: multiply rende bianchi/chiari trasparenti */
+  mix-blend-mode: multiply;
 }
 
 /* ── Preview nella zona bianca del pannello ─────────────────────────────

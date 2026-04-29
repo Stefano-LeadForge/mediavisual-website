@@ -64,7 +64,19 @@ body::before {
    Default: 68% 48% — da calibrare sull'immagine reale.
 ─────────────────────────────────────────────────────────────────────── */
 :root {
-  --hero-zoom-origin: 37% 46%;
+  /*
+   * CALIBRAZIONE ZOOM HERO
+   * Entrambi i valori devono essere identici: object-position e transformOrigin
+   * usano la stessa coppia di percentuali, che CSS garantisce corrispondano
+   * alla stessa posizione nell'immagine e nel viewport.
+   *
+   * Come trovare i valori precisi:
+   *   Apri DevTools → ispeziona .hero-zoom-img → misura il centro del
+   *   rettangolo bianco come % della larghezza e altezza dell'elemento.
+   *
+   * Default: 36% 44% (centro stimato del totem in hero-stand.png)
+   */
+  --hero-zoom-origin: 36% 44%;
 }
 
 /* Outer: crea lo scroll room per l'animazione Framer Motion */
@@ -93,7 +105,12 @@ body::before {
 .hero-zoom-img {
   width: 100%; height: 100%;
   object-fit: cover;
-  object-position: center;
+  /*
+   * object-position = --hero-zoom-origin:
+   * CSS garantisce che il punto X% Y% dell'IMMAGINE coincida con il punto
+   * X% Y% del VIEWPORT — identico valore di transformOrigin → zoom perfetto.
+   */
+  object-position: var(--hero-zoom-origin);
   display: block;
   pointer-events: none;
   user-select: none;
@@ -126,16 +143,17 @@ body::before {
   max-width: 560px;
 }
 
-/* Logo — card con sfondo bianco, profondità totem */
+/* Logo — mix-blend-mode:multiply simula la trasparenza:
+ * il bianco del JPEG scompare fondendosi con lo sfondo scuro,
+ * i colori del logo restano visibili.
+ * Per risultato ottimale usare un PNG con alpha canale. */
 .hero-logo {
   display: block;
   width: clamp(90px, 12vw, 160px);
   height: auto;
   margin-bottom: clamp(1.5rem, 3vh, 2.5rem);
-  border-radius: 4px;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.5), 0 1px 8px rgba(0,0,0,0.3);
-  padding: 10px 14px;
-  background: #fff;
+  mix-blend-mode: multiply;
+  filter: brightness(1.15) contrast(1.05);
 }
 
 /* Headline Industrial Luxury — lowercase per contrasto col brand */
@@ -398,8 +416,8 @@ body::before {
 ══════════════════════════════════════════ */
 .next-section {
   position: relative; z-index: 5;
-  background: var(--primary-mid);
-  border-top: 1px solid var(--secondary);
+  /* sfondo bianco: continua il bianco dello schermo del totem a fine zoom */
+  background: #ffffff;
   padding: 8rem 3.5rem;
 }
 
@@ -409,14 +427,15 @@ body::before {
 .section-eyebrow-line { width: 28px; height: 1px; background: var(--accent); }
 .section-eyebrow-text {
   font-size: 9px; font-weight: 400; letter-spacing: 0.44em;
-  text-transform: uppercase; color: var(--accent);
+  text-transform: uppercase; color: var(--primary);
 }
+.section-eyebrow-line { background: var(--primary); }
 .section-title {
   font-family: var(--font-barlow), sans-serif;
   font-weight: 700;
   font-size: clamp(2.2rem, 4.5vw, 4rem);
   line-height: 1; letter-spacing: -0.01em; text-transform: uppercase;
-  color: var(--text); max-width: 700px;
+  color: var(--primary); max-width: 700px;
 }
 
 /* ══════════════════════════════════════

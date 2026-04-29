@@ -27,11 +27,13 @@ export default function HomePage() {
   });
 
   /* ── ZOOM verso il rettangolo bianco del totem ──────────────────────────
-     scale 1 → 9: calibra maxScale se il bianco non copre (aumenta) o
-     copre troppo presto (riduci).
-     transformOrigin è impostato via CSS var --hero-zoom-origin.
+     Con object-position = transformOrigin = --hero-zoom-origin (36% 44%),
+     il punto fisso dello zoom coincide esattamente con il centro del totem.
+     scale 1 → 6: calcolato geometricamente perché il bianco (28% larghezza
+     immagine) a 6× copre il 100% del viewport.
+     Se il bianco non copre: aumenta maxScale. Se copre troppo presto: riduci.
   ─────────────────────────────────────────────────────────────────────── */
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 9]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 6]);
 
   /* Testo: opacity 1 → 0 nel primo 35% dello scroll */
   const textOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);

@@ -75,11 +75,9 @@ export default function StaticNav() {
   return (
     <>
       <header className="static-header" ref={headerRef}>
-        {/* Wordmark — sostituire con logo SVG all'arrivo del brand kit */}
         <a href="/" className="static-header-logo" aria-label="Mediavisual — Homepage">
-          <span className="static-header-wordmark">
-            MEDIA<span>VISUAL</span>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mediavisual-trasp.png" alt="Mediavisual" className="static-logo-img" />
         </a>
 
         {/* Nav desktop — nascosto a ≤900px */}

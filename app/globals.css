@@ -142,13 +142,6 @@ body::before {
   max-width: 560px;
 }
 
-.hero-logo {
-  display: block;
-  width: clamp(90px, 12vw, 160px);
-  height: auto;
-  margin-bottom: clamp(1.5rem, 3vh, 2.5rem);
-  filter: brightness(1.15) contrast(1.05);
-}
 
 .hero-headline {
   font-family: var(--font-barlow), sans-serif;
@@ -214,19 +207,17 @@ body::before {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Wordmark testuale — sostituire con <img> all'arrivo del brand kit */
 .nav-wordmark {
-  font-family: var(--font-barlow), sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--text);
+  display: flex;
+  align-items: center;
   text-decoration: none;
-  transition: color 200ms ease;
 }
-.nav-wordmark span { color: var(--accent); }
-.nav-wordmark:hover { color: var(--accent-bright); }
+.nav-logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+  filter: brightness(1.1);
+}
 
 .nav-links {
   display: flex; gap: 2.5rem; list-style: none; align-items: center;
@@ -494,13 +485,13 @@ body::before {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
-.static-header-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-.static-header-wordmark {
-  font-family: var(--font-barlow), sans-serif;
-  font-weight: 700; font-size: 14px; letter-spacing: 0.25em;
-  text-transform: uppercase; color: var(--text);
+.static-header-logo { display: flex; align-items: center; text-decoration: none; }
+.static-logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+  filter: brightness(1.1);
 }
-.static-header-wordmark span { color: var(--accent); }
 .static-nav-right { display: flex; align-items: center; gap: 2.5rem; }
 .static-nav-links { display: flex; gap: 2.5rem; list-style: none; align-items: center; }
 .static-nav-link {
@@ -814,7 +805,6 @@ body::before {
   .hero-stand-img { max-height: 55vh; }
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
-  .hero-logo { width: clamp(80px, 28vw, 140px); }
 
   .next-section { padding: 5rem 1.5rem; }
 

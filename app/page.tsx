@@ -165,7 +165,8 @@ export default function HomePage() {
       {/* ══ NAV ════════════════════════════════════════════════════════════ */}
       <nav id="nav">
         <a href="/" className="nav-wordmark" aria-label="Mediavisual — Homepage">
-          MEDIA<span>VISUAL</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mediavisual-trasp.png" alt="Mediavisual" className="nav-logo-img" />
         </a>
         <ul className="nav-links">
           <li><a href="/servizi">Servizi</a></li>
@@ -242,13 +243,6 @@ export default function HomePage() {
         {/* ── Contenuto hero: logo + headline + CTA ── */}
         <div className="hero-content-layer" ref={contentRef}>
           <div id="heroContent" className="hero-content-block">
-
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-mediavisual-trasp.png"
-              alt="Mediavisual"
-              className="hero-logo"
-            />
 
             <h1 className="hero-headline">
               il tuo brand,<br />

@@ -8,29 +8,6 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-/* ── GEOMETRIA PANNELLO BIANCO (hero-stand.png 1672×941) ──────────────
-   L'immagine è RGB 16:9, sfondo quasi-bianco (non trasparente).
-   Il pannello del totem occupa approssimativamente:
-     left 26%  right 74%  → larghezza ≈ 48% dell'immagine
-     top   8%  bottom 70% → altezza   ≈ 62% dell'immagine
-     center X = 50%   center Y ≈ 39%
-
-   transformOrigin '50% 39%' mappa al centro del pannello che, con lo
-   stand a 78vh ancorato al bottom, corrisponde ~al centro del viewport.
-   Il bianco definitivo è garantito dall'overlay (non dallo scale esatto).
-──────────────────────────────────────────────────────────────────────── */
-const PANEL = {
-  left:   0.26,
-  right:  0.74,
-  top:    0.08,
-  bottom: 0.70,
-  cx:     0.50,
-  cy:     0.39,
-} as const;
-
-/* Scale fisso: garantisce copertura su qualsiasi viewport.
-   A scale 5 il pannello (≈48% di 78vh) = 240% del viewport → overflow:hidden lo ritaglia. */
-const ZOOM_SCALE = 5;
 
 export default function HomePage() {
   const lenisCtx  = useLenis();
@@ -39,7 +16,6 @@ export default function HomePage() {
 
   const heroRef         = useRef<HTMLElement>(null);
   const mallBgRef       = useRef<HTMLImageElement>(null);
-  const standWrapRef    = useRef<HTMLDivElement>(null);
   const contentRef      = useRef<HTMLDivElement>(null);
   const scrollCueRef    = useRef<HTMLDivElement>(null);
   const whiteOverlayRef = useRef<HTMLDivElement>(null);
@@ -68,36 +44,11 @@ export default function HomePage() {
         .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
     }
 
-    /* ── SCROLL ZOOM ─────────────────────────────────────────────────────
-       Timeline:
-         0.00–0.35  contenuto hero svanisce e sale
-         0.00–1.00  mall: zoom leggero + dissolvenza
-         0.00–1.00  stand: zoom power3.in (lento→veloce), scale 1→5
-         0.40–1.00  white overlay: fade-in → bianco totale
-
-       Con scrub, la posizione del timeline segue lo scroll 1:1.
-       L'ease 'power3.in' sullo stand fa sì che a metà scroll la scala
-       sia ancora bassa, poi accelera bruscamente negli ultimi 30%.
-    ─────────────────────────────────────────────────────────────────────  */
-    const standWrap = standWrapRef.current;
-    if (!standWrap) return;
-
-    /* Il pannello bianco è al centro dell'immagine (X=50%).
-       Verticalmente: 39% dall'alto dell'elemento. Con stand a 78vh
-       ancorato al bottom, questo corrisponde circa al centro del viewport. */
-    gsap.set(standWrap, {
-      transformOrigin: `${PANEL.cx * 100}% ${PANEL.cy * 100}%`,
-    });
-
+    /* ── SCROLL ZOOM ── */
     const tl = gsap.timeline({ paused: true })
-      /* 1. contenuto scompare subito */
       .to(contentRef.current,      { opacity: 0, y: -24, duration: 0.35, ease: 'power2.in' }, 0)
       .to(scrollCueRef.current,    { opacity: 0, duration: 0.25, ease: 'power1.in' }, 0)
-      /* 2. mall: leggero zoom + attenuazione per dare profondità */
       .to(mallBgRef.current,       { scale: 1.10, opacity: 0.3, duration: 1, ease: 'none' }, 0)
-      /* 3. stand: zoom lento→veloce verso il pannello bianco */
-      .to(standWrap,               { scale: ZOOM_SCALE, duration: 1, ease: 'power3.in' }, 0)
-      /* 4. overlay bianco: sale da 40% dello scroll, completo a 100% */
       .to(whiteOverlayRef.current, { opacity: 1, duration: 0.6, ease: 'power2.in' }, 0.40);
 
     const st = ScrollTrigger.create({
@@ -208,7 +159,6 @@ export default function HomePage() {
 
       {/* ══ HERO ════════════════════════════════════════════════════════════
           Layer 1 — mall background (hero-mall.png): full-screen cover
-          Layer 2 — stand PNG (hero-stand.png): foreground, bottom-center
           White overlay — fade-in al 40% dello scroll → bianco totale
           ScrollTrigger pinna la sezione per 480px di scroll effettivo.
       ══ */}
@@ -231,34 +181,6 @@ export default function HomePage() {
         {/* Gradiente scuro sinistra per leggibilità testo */}
         <div className="hero-tint" aria-hidden="true" />
 
-        {/* ── Layer 2: stand pubblicitario ───────────────────────────────────
-            .hero-stand-positioner  posiziona bottom-center via CSS
-            .hero-stand-wrap        è il target GSAP (scale + transformOrigin)
-            Dentro: img PNG + preview del contenuto nella zona del pannello */}
-        <div className="hero-stand-positioner">
-          <div className="hero-stand-wrap" ref={standWrapRef}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/hero-stand.png"
-              alt="Stand pubblicitario Mediavisual"
-              className="hero-stand-img"
-              draggable={false}
-            />
-
-            {/* Preview: posizionata alle coordinate del pannello bianco.
-                PANEL: left 26%, top 8%, width 48%, height 62%.
-                Scala proporzionalmente allo stand → effetto "entrata nel pannello". */}
-            <div className="hero-panel-preview" aria-hidden="true">
-              <div className="section-eyebrow preview-eyebrow">
-                <div className="section-eyebrow-line" />
-                <span className="section-eyebrow-text">Chi Siamo</span>
-              </div>
-              <h2 className="section-title preview-title">
-                Progettiamo e installiamo<br />strutture ad alto impatto visivo.
-              </h2>
-            </div>
-          </div>
-        </div>
 
         {/* ── White overlay ──────────────────────────────────────────────────
             Parte trasparente, fade-in al 40% dello scroll.
@@ -273,13 +195,6 @@ export default function HomePage() {
         {/* ── Contenuto hero: logo + headline + CTA ── */}
         <div className="hero-content-layer" ref={contentRef}>
           <div id="heroContent" className="hero-content-block">
-
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-mediavisual.jpeg"
-              alt="Mediavisual"
-              className="hero-logo"
-            />
 
             <h1 className="hero-headline">
               il tuo brand,<br />

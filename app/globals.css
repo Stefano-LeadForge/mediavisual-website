@@ -118,7 +118,7 @@ body::before {
 
 .hero-stand-wrap {
   position: relative;
-  height: 75vh;
+  height: 78vh;
   width: auto;
   will-change: transform;
 }
@@ -139,12 +139,32 @@ body::before {
    font-size ridotto per essere leggibile a scale=1; a zoom completo
    il testo riempie il pannello a dimensioni viewport.
 ─────────────────────────────────────────────────────────────────────── */
+/* ── OVERLAY BIANCO ────────────────────────────────────────────────────
+   Parte a opacity 0, GSAP lo porta a 1 al 40% dello scroll.
+   Copre tutto il viewport → passaggio "flash bianco" → seconda sezione.
+   z-index 30: sopra allo stand, sotto alla nav e al contenuto hero.
+─────────────────────────────────────────────────────────────────────── */
+.hero-white-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* ── PREVIEW nel pannello bianco ────────────────────────────────────────
+   Coordinate PANEL: left 26%, top 8%, width 48%, height 62%.
+   Il div scala proporzionalmente allo stand durante il zoom → effetto
+   "il viewer sta entrando nel pannello".
+─────────────────────────────────────────────────────────────────────── */
 .hero-panel-preview {
   position: absolute;
-  top:    3%;
-  left:   16%;
-  width:  68%;
-  height: 77%;
+  top:    8%;
+  left:   26%;
+  width:  48%;
+  height: 62%;
   display: flex;
   flex-direction: column;
   justify-content: center;

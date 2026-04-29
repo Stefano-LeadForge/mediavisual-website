@@ -8,35 +8,41 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-/* ── PANEL GEOMETRY (hero-stand.png) ──────────────────────────────────
-   Il pannello bianco del totem occupa queste frazioni dell'immagine PNG.
-   Misurato dall'analisi visiva dell'immagine con sfondo trasparente.
-   L'immagine è landscape (4:3 circa); il pannello è centrato.
-     left  16%  right  84%  → larghezza pannello 68% dell'immagine
-     top    3%  bottom 80%  → altezza pannello   77% dell'immagine
-     center X = 50%   center Y = 41.5%
-   Questi valori guidano: transformOrigin, scale dinamico, posizione preview.
+/* ── GEOMETRIA PANNELLO BIANCO (hero-stand.png 1672×941) ──────────────
+   L'immagine è RGB 16:9, sfondo quasi-bianco (non trasparente).
+   Il pannello del totem occupa approssimativamente:
+     left 26%  right 74%  → larghezza ≈ 48% dell'immagine
+     top   8%  bottom 70% → altezza   ≈ 62% dell'immagine
+     center X = 50%   center Y ≈ 39%
+
+   transformOrigin '50% 39%' mappa al centro del pannello che, con lo
+   stand a 78vh ancorato al bottom, corrisponde ~al centro del viewport.
+   Il bianco definitivo è garantito dall'overlay (non dallo scale esatto).
 ──────────────────────────────────────────────────────────────────────── */
 const PANEL = {
-  left:   0.16,
-  right:  0.84,
-  top:    0.03,
-  bottom: 0.80,
+  left:   0.26,
+  right:  0.74,
+  top:    0.08,
+  bottom: 0.70,
   cx:     0.50,
-  cy:     0.415,
+  cy:     0.39,
 } as const;
+
+/* Scale fisso: garantisce copertura su qualsiasi viewport.
+   A scale 5 il pannello (≈48% di 78vh) = 240% del viewport → overflow:hidden lo ritaglia. */
+const ZOOM_SCALE = 5;
 
 export default function HomePage() {
   const lenisCtx  = useLenis();
   const lenisRef  = useRef(lenisCtx);
   lenisRef.current = lenisCtx;
 
-  const heroRef      = useRef<HTMLElement>(null);
-  const mallBgRef    = useRef<HTMLImageElement>(null);
-  const standWrapRef = useRef<HTMLDivElement>(null);
-  const contentRef   = useRef<HTMLDivElement>(null);
-  const scrollCueRef = useRef<HTMLDivElement>(null);
-  const previewRef   = useRef<HTMLDivElement>(null);
+  const heroRef         = useRef<HTMLElement>(null);
+  const mallBgRef       = useRef<HTMLImageElement>(null);
+  const standWrapRef    = useRef<HTMLDivElement>(null);
+  const contentRef      = useRef<HTMLDivElement>(null);
+  const scrollCueRef    = useRef<HTMLDivElement>(null);
+  const whiteOverlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     /* ── REDUCED MOTION ── */
@@ -45,10 +51,7 @@ export default function HomePage() {
       return;
     }
 
-    /* ── POWER-ON ENTRANCE ───────────────────────────────────────────────
-       Nav scende dall'alto; scanline CRT percorre il viewport;
-       il blocco contenuto si eleva. Solo se la pagina parte da top.
-    ─────────────────────────────────────────────────────────────────────  */
+    /* ── POWER-ON ENTRANCE ─────────────────────────────────────────────── */
     gsap.set('#nav',         { opacity: 0, y: -12 });
     gsap.set('#heroContent', { opacity: 0, y: 40  });
     gsap.set('#scanline',    { y: 0, opacity: 0   });
@@ -65,55 +68,49 @@ export default function HomePage() {
         .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
     }
 
-    /* ── SCROLL-DRIVEN ZOOM ──────────────────────────────────────────────
-       Calcola dinamicamente lo scale necessario affinché il pannello bianco
-       del totem riempia esattamente il viewport.
+    /* ── SCROLL ZOOM ─────────────────────────────────────────────────────
+       Timeline:
+         0.00–0.35  contenuto hero svanisce e sale
+         0.00–1.00  mall: zoom leggero + dissolvenza
+         0.00–1.00  stand: zoom power3.in (lento→veloce), scale 1→5
+         0.40–1.00  white overlay: fade-in → bianco totale
 
-       Meccanica:
-       1. Lo stand PNG ha sfondo trasparente: solo il pannello è opaco.
-       2. Con transformOrigin al centro del pannello (50% 41.5%), lo scale
-          espande l'immagine tenendo fermo quel punto.
-       3. Quando il pannello raggiunge i bordi del viewport, le zone
-          trasparenti (pali, piedi) sono già fuori dal viewport → clippate.
-       4. Il risultato è bianco puro che riempie tutto il viewport.
+       Con scrub, la posizione del timeline segue lo scroll 1:1.
+       L'ease 'power3.in' sullo stand fa sì che a metà scroll la scala
+       sia ancora bassa, poi accelera bruscamente negli ultimi 30%.
     ─────────────────────────────────────────────────────────────────────  */
     const standWrap = standWrapRef.current;
     if (!standWrap) return;
 
-    const computeScale = () => {
-      const rect = standWrap.getBoundingClientRect();
-      const vw   = window.innerWidth;
-      const vh   = window.innerHeight;
-      const panelW = (PANEL.right - PANEL.left) * rect.width;
-      const panelH = (PANEL.bottom - PANEL.top) * rect.height;
-      /* Prendiamo il maggiore dei due fattori per coprire entrambe le dimensioni */
-      return Math.max(vw / panelW, vh / panelH) * 1.08; // 8% safety margin
-    };
-
-    /* Transform origin: centro del pannello bianco come % dell'elemento */
+    /* Il pannello bianco è al centro dell'immagine (X=50%).
+       Verticalmente: 39% dall'alto dell'elemento. Con stand a 78vh
+       ancorato al bottom, questo corrisponde circa al centro del viewport. */
     gsap.set(standWrap, {
       transformOrigin: `${PANEL.cx * 100}% ${PANEL.cy * 100}%`,
     });
 
-    const buildTimeline = () => gsap.timeline({ paused: true })
-      /* contenuto hero: svanisce e sale leggermente */
-      .to(contentRef.current,   { opacity: 0, y: -24, duration: 0.35, ease: 'power2.in' }, 0)
-      .to(scrollCueRef.current, { opacity: 0, duration: 0.2 }, 0)
-      /* sfondo mall: zoom leggero + attenuazione */
-      .to(mallBgRef.current,    { scale: 1.12, opacity: 0.35, duration: 1, ease: 'none' }, 0)
-      /* stand: zoom verso il pannello bianco */
-      .to(standWrap,            { scale: computeScale(), duration: 1, ease: 'none' }, 0);
-
-    const tl = buildTimeline();
+    const tl = gsap.timeline({ paused: true })
+      /* 1. contenuto scompare subito */
+      .to(contentRef.current,      { opacity: 0, y: -24, duration: 0.35, ease: 'power2.in' }, 0)
+      .to(scrollCueRef.current,    { opacity: 0, duration: 0.25, ease: 'power1.in' }, 0)
+      /* 2. mall: leggero zoom + attenuazione per dare profondità */
+      .to(mallBgRef.current,       { scale: 1.10, opacity: 0.3, duration: 1, ease: 'none' }, 0)
+      /* 3. stand: zoom lento→veloce verso il pannello bianco */
+      .to(standWrap,               { scale: ZOOM_SCALE, duration: 1, ease: 'power3.in' }, 0)
+      /* 4. overlay bianco: sale da 40% dello scroll, completo a 100% */
+      .to(whiteOverlayRef.current, { opacity: 1, duration: 0.6, ease: 'power2.in' }, 0.40);
 
     const st = ScrollTrigger.create({
       trigger:   heroRef.current,
       start:     'top top',
-      end:       '+=380',           /* ~380px di scroll effettivo */
+      end:       '+=480',           /* 480px di scroll effettivo */
       pin:       true,
-      scrub:     0.6,
+      scrub:     0.5,
       animation: tl,
     });
+
+    /* Refresh dopo il caricamento delle immagini (in caso di cache miss) */
+    window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
 
     /* ── NAV: diventa solido dopo 50px ── */
     const navEl = document.getElementById('nav');
@@ -210,19 +207,17 @@ export default function HomePage() {
       </div>
 
       {/* ══ HERO ════════════════════════════════════════════════════════════
-          Due layer separati: mall background + stand foreground PNG.
-          ScrollTrigger pinna la sezione e zooma lo stand finché il
-          pannello bianco riempie il viewport — poi la sezione successiva
-          (sfondo bianco) continua naturalmente.
+          Layer 1 — mall background (hero-mall.png): full-screen cover
+          Layer 2 — stand PNG (hero-stand.png): foreground, bottom-center
+          White overlay — fade-in al 40% dello scroll → bianco totale
+          ScrollTrigger pinna la sezione per 480px di scroll effettivo.
       ══ */}
       <section className="hero-section" ref={heroRef} id="heroSection">
 
-        {/* CRT scanline — power-on entrance */}
+        {/* CRT scanline entrance */}
         <div className="hero-scanline" id="scanline" aria-hidden="true" />
 
-        {/* ── LAYER 1: sfondo centro commerciale ──────────────────────────
-            Copre l'intero viewport. GSAP lo zooma e attenua leggermente
-            durante lo scroll, creando profondità. */}
+        {/* ── Layer 1: centro commerciale ── */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={mallBgRef}
@@ -233,18 +228,13 @@ export default function HomePage() {
           draggable={false}
         />
 
-        {/* Gradiente scuro sinistra — leggibilità testo */}
+        {/* Gradiente scuro sinistra per leggibilità testo */}
         <div className="hero-tint" aria-hidden="true" />
 
-        {/* ── LAYER 2: stand pubblicitario (PNG trasparente) ───────────────
-            Posizionato in basso al centro. GSAP zooma l'intera immagine
-            con transformOrigin al centro del pannello bianco (50% 41.5%).
-            Le zone trasparenti si allargano oltre il viewport: rimane
-            visibile solo il pannello bianco, che diventa lo sfondo della
-            sezione successiva.
-
-            .hero-stand-positioner — solo per l'allineamento CSS
-            .hero-stand-wrap       — target GSAP per lo scale */}
+        {/* ── Layer 2: stand pubblicitario ───────────────────────────────────
+            .hero-stand-positioner  posiziona bottom-center via CSS
+            .hero-stand-wrap        è il target GSAP (scale + transformOrigin)
+            Dentro: img PNG + preview del contenuto nella zona del pannello */}
         <div className="hero-stand-positioner">
           <div className="hero-stand-wrap" ref={standWrapRef}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -255,16 +245,10 @@ export default function HomePage() {
               draggable={false}
             />
 
-            {/* ── PREVIEW nella zona bianca del pannello ─────────────────
-                Posizionata con le stesse % di PANEL: top 3%, left 16%,
-                width 68%, height 77%. Mentre lo stand zooma, questa
-                preview zooma proporzionalmente — l'utente percepisce
-                di "entrare" nel pannello. Svanisce nella sezione reale. */}
-            <div
-              className="hero-panel-preview"
-              ref={previewRef}
-              aria-hidden="true"
-            >
+            {/* Preview: posizionata alle coordinate del pannello bianco.
+                PANEL: left 26%, top 8%, width 48%, height 62%.
+                Scala proporzionalmente allo stand → effetto "entrata nel pannello". */}
+            <div className="hero-panel-preview" aria-hidden="true">
               <div className="section-eyebrow preview-eyebrow">
                 <div className="section-eyebrow-line" />
                 <span className="section-eyebrow-text">Chi Siamo</span>
@@ -276,8 +260,17 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── CONTENT: headline + CTA ─────────────────────────────────────
-            GSAP dissolve durante lo zoom (opacity 0, y -24). */}
+        {/* ── White overlay ──────────────────────────────────────────────────
+            Parte trasparente, fade-in al 40% dello scroll.
+            A scroll completato è completamente bianco → passaggio invisibile
+            alla seconda sezione che ha lo stesso sfondo. */}
+        <div
+          className="hero-white-overlay"
+          ref={whiteOverlayRef}
+          aria-hidden="true"
+        />
+
+        {/* ── Contenuto hero: logo + headline + CTA ── */}
         <div className="hero-content-layer" ref={contentRef}>
           <div id="heroContent" className="hero-content-block">
 
@@ -320,8 +313,8 @@ export default function HomePage() {
       </section>
 
       {/* ══ SECONDA SEZIONE ═════════════════════════════════════════════════
-          Sfondo bianco: continua naturalmente dal pannello bianco del totem.
-          La transizione è invisibile — bianco su bianco.
+          Sfondo #ffffff — continua naturalmente dall'overlay bianco finale.
+          La transizione è invisibile: bianco → bianco.
       ══ */}
       <section className="next-section" id="nextSection">
         <div className="section-eyebrow">

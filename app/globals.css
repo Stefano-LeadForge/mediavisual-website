@@ -168,20 +168,12 @@ body::before {
   position: absolute;
   left: 50%;
   top: 53%;
-  opacity: 0; /* GSAP anima l'ingresso */
-  transform: translateX(-50%);
-  z-index: 6;
+  z-index: 8;
   background: none;
   border: none;
   cursor: pointer;
   padding: 10px;
   line-height: 0;
-  animation: heroArrowBounce 1.6s ease-in-out infinite;
-}
-
-@keyframes heroArrowBounce {
-  0%, 100% { transform: translateX(-50%) translateY(0px); }
-  50%       { transform: translateX(-50%) translateY(14px); }
 }
 
 
@@ -802,7 +794,7 @@ body::before {
   .hamburger { display: flex; }
 
   .hero-section { height: 100svh; }
-  .hero-stand-img { max-height: 82vh; max-width: none; margin-top: 22vh; }
+  .hero-stand-img { max-height: 70vh; max-width: none; margin-top: 16vh; }
   .hero-arrow-down { top: 63%; }
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }

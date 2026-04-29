@@ -26,6 +26,9 @@ export default function HomePage() {
   const standOpacityEntrance = useMotionValue(0);
   const standY               = useMotionValue(20);
 
+  /* ── ARROW: entrance + scroll scale (first half) + fade (second half) ── */
+  const arrowOpacityEntrance = useMotionValue(0);
+
   const { scrollY } = useScroll();
 
   /* Non-linear scale: desktop 480 px, mobile 900 px (più lento, riempie lo schermo) */
@@ -39,54 +42,66 @@ export default function HomePage() {
     return fmTransform(sy, [0, 120, 240, 360, 480], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
   });
 
+  /* Arrow: stessa scala stand per prima metà, poi fade out */
+  const arrowOpacity = useTransform(() => {
+    const sy  = scrollY.get();
+    const mob = typeof window !== 'undefined' && window.innerWidth < 768;
+    const half = mob ? 450 : 240;
+    const full = mob ? 900 : 480;
+    const scrollFade = sy <= half ? 1 : fmTransform(sy, [half, full], [1, 0], { clamp: true });
+    return arrowOpacityEntrance.get() * scrollFade;
+  });
+
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isScrolled     = window.scrollY > 0;
 
-    /* ── STAND ENTRANCE (Framer Motion) ── */
+    /* ── STAND + ARROW ENTRANCE (Framer Motion) ── */
     let entranceTimeout: ReturnType<typeof setTimeout> | null = null;
+    let arrowEntranceTimeout: ReturnType<typeof setTimeout> | null = null;
     if (prefersReduced || isScrolled) {
       standOpacityEntrance.set(1);
       standY.set(0);
+      arrowOpacityEntrance.set(1);
     } else {
-      /* Appare 300 ms dopo heroContent (che inizia a t=1.1 s) */
+      /* Stand appare 300 ms dopo heroContent (che inizia a t=1.1 s) */
       entranceTimeout = setTimeout(() => {
         animate(standOpacityEntrance, 1, { duration: 1.0, ease: [0.23, 1, 0.32, 1] });
         animate(standY,               0, { duration: 1.0, ease: [0.23, 1, 0.32, 1] });
       }, 1400);
+      /* Freccia appare dopo lo stand */
+      arrowEntranceTimeout = setTimeout(() => {
+        animate(arrowOpacityEntrance, 1, { duration: 0.7, ease: [0.23, 1, 0.32, 1] });
+      }, 1900);
     }
 
     /* ── REDUCED MOTION ── */
     if (prefersReduced) {
       gsap.set(['#nav', '#heroContent'], { opacity: 1, y: 0 });
-      gsap.set(arrowRef.current, { opacity: 1 });
       return () => {
         if (entranceTimeout !== null) clearTimeout(entranceTimeout);
+        if (arrowEntranceTimeout !== null) clearTimeout(arrowEntranceTimeout);
       };
     }
 
     /* ── POWER-ON ENTRANCE ─────────────────────────────────────────────── */
-    gsap.set('#nav',           { opacity: 0, y: -12 });
-    gsap.set('#heroContent',   { opacity: 0, y: 40  });
-    gsap.set(arrowRef.current, { opacity: 0 });
+    gsap.set('#nav',         { opacity: 0, y: -12 });
+    gsap.set('#heroContent', { opacity: 0, y: 40  });
 
     if (isScrolled) {
-      gsap.set('#nav',           { opacity: 1, y: 0 });
-      gsap.set('#heroContent',   { opacity: 1, y: 0 });
-      gsap.set(arrowRef.current, { opacity: 1 });
+      gsap.set('#nav',         { opacity: 1, y: 0 });
+      gsap.set('#heroContent', { opacity: 1, y: 0 });
     } else {
       gsap.timeline({ defaults: { ease: 'power3.out' } })
-        .to('#nav',           { opacity: 1, y: 0, duration: 0.9 }, 0)
-        .to('#heroContent',   { opacity: 1, y: 0, duration: 1.0 }, 1.1)
-        .to(arrowRef.current, { opacity: 1, duration: 0.7 },        1.9);
+        .to('#nav',         { opacity: 1, y: 0, duration: 0.9 }, 0)
+        .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
     }
 
     /* ── SCROLL ZOOM ── */
     const tl = gsap.timeline({ paused: true })
       .to(contentRef.current,      { opacity: 0, y: -24, duration: 0.35, ease: 'power2.in' }, 0)
       .to(scrollCueRef.current,    { opacity: 0, duration: 0.25, ease: 'power1.in' }, 0)
-      .to(arrowRef.current,        { opacity: 0, duration: 0.25, ease: 'power1.in' }, 0)
       .to(mallBgRef.current,       { scale: 1.10, opacity: 0.3, duration: 1, ease: 'none' }, 0)
       .to(whiteOverlayRef.current, { opacity: 1, duration: 0.6, ease: 'power2.in' }, 0.40);
 
@@ -158,6 +173,7 @@ export default function HomePage() {
 
     return () => {
       if (entranceTimeout !== null) clearTimeout(entranceTimeout);
+      if (arrowEntranceTimeout !== null) clearTimeout(arrowEntranceTimeout);
       st.kill();
       tl.kill();
       window.removeEventListener('scroll', onNavScroll);
@@ -240,18 +256,22 @@ export default function HomePage() {
           />
         </div>
 
-        {/* ── Freccia scroll: cliccabile, posizionata al centro dello stand ── */}
-        <button
+        {/* ── Freccia scroll: cliccabile, stessa scala stand (prima metà), poi fade ── */}
+        <motion.button
           ref={arrowRef}
           type="button"
           className="hero-arrow-down"
           aria-label="Scorri alla sezione successiva"
+          style={{ scale: scrollScale, opacity: arrowOpacity, x: '-50%' }}
+          animate={{ y: [0, 14, 0] }}
+          transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
         >
-          {/* Triangolo pieno: base larga in alto, punta in basso */}
-          <svg width="64" height="52" viewBox="0 0 64 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="2,2 62,2 32,50" fill="black" />
+          {/* Freccia: coda + testa (shaft + arrowhead) */}
+          <svg width="40" height="70" viewBox="0 0 40 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="15" y="2" width="10" height="42" fill="black" rx="5" />
+            <polygon points="2,44 38,44 20,68" fill="black" />
           </svg>
-        </button>
+        </motion.button>
 
         {/* ── White overlay ──────────────────────────────────────────────────
             Parte trasparente, fade-in al 40% dello scroll.

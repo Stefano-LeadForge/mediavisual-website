@@ -42,13 +42,19 @@ export default function HomePage() {
     return fmTransform(sy, [0, 120, 240, 360, 480], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
   });
 
-  /* Arrow: stessa scala stand per prima metà, poi fade out */
-  const arrowOpacity = useTransform(() => {
+  /* Arrow: scala lievissima + sparisce presto */
+  const arrowScale = useTransform(() => {
     const sy  = scrollY.get();
     const mob = typeof window !== 'undefined' && window.innerWidth < 768;
-    const half = mob ? 450 : 240;
-    const full = mob ? 900 : 480;
-    const scrollFade = sy <= half ? 1 : fmTransform(sy, [half, full], [1, 0], { clamp: true });
+    return fmTransform(sy, [0, mob ? 150 : 80], [1, 1.05], { clamp: true });
+  });
+
+  const arrowOpacity = useTransform(() => {
+    const sy        = scrollY.get();
+    const mob       = typeof window !== 'undefined' && window.innerWidth < 768;
+    const fadeStart = mob ? 80  : 40;
+    const fadeEnd   = mob ? 260 : 130;
+    const scrollFade = sy <= fadeStart ? 1 : fmTransform(sy, [fadeStart, fadeEnd], [1, 0], { clamp: true });
     return arrowOpacityEntrance.get() * scrollFade;
   });
 
@@ -244,32 +250,42 @@ export default function HomePage() {
         {/* Gradiente scuro sinistra per leggibilità testo */}
         <div className="hero-tint" aria-hidden="true" />
 
-        {/* ── Layer 2: stand centrato — animato con Framer Motion ── */}
+        {/* ── Layer 2: stand + logo brand — gruppo animato con Framer Motion ── */}
         <div className="hero-stand-positioner" aria-hidden="true">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <motion.img
-            src="/hero-stand-trasp.png"
-            alt=""
-            className="hero-stand-img"
-            draggable={false}
+          <motion.div
+            className="hero-stand-group"
             style={{ scale: scrollScale, opacity: standOpacityEntrance, y: standY }}
-          />
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hero-stand-trasp.png"
+              alt=""
+              className="hero-stand-img"
+              draggable={false}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-mediavisual-trasp.png"
+              alt=""
+              className="hero-stand-logo"
+              draggable={false}
+            />
+          </motion.div>
         </div>
 
-        {/* ── Freccia scroll: cliccabile, stessa scala stand (prima metà), poi fade ── */}
+        {/* ── Freccia scroll: design minimale per stand pubblicitario ── */}
         <motion.button
           ref={arrowRef}
           type="button"
           className="hero-arrow-down"
           aria-label="Scorri alla sezione successiva"
-          style={{ scale: scrollScale, opacity: arrowOpacity, x: '-50%' }}
-          animate={{ y: [0, 14, 0] }}
-          transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+          style={{ scale: arrowScale, opacity: arrowOpacity, x: '-50%' }}
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
         >
-          {/* Freccia: coda + testa (shaft + arrowhead) */}
-          <svg width="40" height="70" viewBox="0 0 40 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="15" y="2" width="10" height="42" fill="black" rx="5" />
-            <polygon points="2,44 38,44 20,68" fill="black" />
+          <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="25" cy="25" r="23" stroke="black" stroke-width="1.5" />
+            <polyline points="15,21 25,31 35,21" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </motion.button>
 

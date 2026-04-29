@@ -109,8 +109,10 @@ body::before {
   pointer-events: none;
 }
 .hero-stand-img {
-  height: 80vh;
+  display: block;
   width: auto;
+  height: auto;
+  max-height: 80vh;
   max-width: 90vw;
   user-select: none;
   will-change: transform, opacity;
@@ -809,7 +811,7 @@ body::before {
   .hamburger { display: flex; }
 
   .hero-section { height: 100svh; }
-  .hero-stand-img { height: 55vh; }
+  .hero-stand-img { max-height: 55vh; }
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
   .hero-logo { width: clamp(80px, 28vw, 140px); }

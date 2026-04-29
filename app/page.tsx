@@ -35,14 +35,6 @@ export default function HomePage() {
     { clamp: true },
   );
 
-  /* Fade-out attivo solo nella fase veloce finale */
-  const scrollFade = useTransform(scrollY, [270, 460], [1, 0], { clamp: true });
-
-  /* Opacità combinata: min(entrance, scrollFade) */
-  const standOpacity = useTransform(
-    [standOpacityEntrance, scrollFade],
-    ([entry, fade]: number[]) => Math.min(entry, fade),
-  );
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -233,7 +225,7 @@ export default function HomePage() {
             alt=""
             className="hero-stand-img"
             draggable={false}
-            style={{ scale: scrollScale, opacity: standOpacity, y: standY }}
+            style={{ scale: scrollScale, opacity: standOpacityEntrance, y: standY }}
           />
         </div>
 

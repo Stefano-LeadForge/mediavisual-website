@@ -3,10 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useLenis } from '@/components/SmoothScrolling';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+gsap.registerPlugin(ScrollToPlugin);
 
 export default function HomePage() {
   const scrollCueRef = useRef<HTMLDivElement>(null);
@@ -21,7 +20,7 @@ export default function HomePage() {
 
     /* ── REDUCED MOTION: salta tutte le animazioni ── */
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.set(['#nav', '#eyebrow', '#title', '#ctas', '#mediaCard'], {
+      gsap.set(['#nav', '#eyebrow', '#title', '#ctas'], {
         opacity: 1, y: 0, scaleY: 1, clearProps: 'transform',
       });
       cue.classList.add('visible');
@@ -37,7 +36,6 @@ export default function HomePage() {
     gsap.set('#eyebrow',  { opacity: 0, y: 60 });
     gsap.set('#title',    { opacity: 0, y: 80, scaleY: 0.92, transformOrigin: 'bottom center' });
     gsap.set('#ctas',     { opacity: 0, y: 40 });
-    gsap.set('#mediaCard',{ opacity: 0 });
     gsap.set('#scanline', { y: 0, opacity: 0 });
 
     const isScrolled = window.scrollY > 0;
@@ -48,7 +46,6 @@ export default function HomePage() {
       gsap.set('#eyebrow',   { opacity: 1, y: 0 });
       gsap.set('#title',     { opacity: 1, y: 0, scaleY: 1 });
       gsap.set('#ctas',      { opacity: 1, y: 0 });
-      gsap.set('#mediaCard', { opacity: 1 });
       cue.classList.add('visible');
     } else {
       /* ═══════════════════════════════════════════════════════════════════
@@ -57,7 +54,6 @@ export default function HomePage() {
          Fasi:
            0.0s  → 0.9s : Nav scende dall'alto (frame primo)
            0.2s  → 1.4s : Scanline scorre dall'alto in basso (effetto CRT)
-           0.35s → 1.3s : Media card appare dietro la scanline
            1.0s  → 1.9s : Eyebrow si eleva (totem che sale)
            1.15s → 2.2s : Titolo si eleva con scaleY (struttura che si estende)
            1.45s → 2.2s : CTA group appare
@@ -82,9 +78,6 @@ export default function HomePage() {
         .to('#scanline', { y: '100vh', duration: 1.2, ease: 'power2.inOut' }, 0.2)
         .to('#scanline', { opacity: 0, duration: 0.08 }, 1.38)
 
-        /* MEDIA CARD — appare mentre la scanline scorre */
-        .to('#mediaCard', { opacity: 1, duration: 0.9, ease: 'power2.out' }, 0.35)
-
         /* EYEBROW — si eleva come un pannello montato */
         .to('#eyebrow', { opacity: 1, y: 0, duration: 0.9 }, 1.0)
 
@@ -98,95 +91,6 @@ export default function HomePage() {
         .add(() => { cue.classList.add('visible'); }, 2.2);
     }
 
-    /* ═══════════════════════════════════════════════════════════════════
-       SCROLL EXPANSION — media card → fullscreen
-       Responsive tramite gsap.matchMedia():
-         Desktop (≥769px): scrub lento, sincrono con Lenis
-         Mobile  (≤768px): scrub più rapido, più reattivo al touch
-    ═══════════════════════════════════════════════════════════════════ */
-    const card       = document.getElementById('mediaCard');
-    const imgOverlay = document.getElementById('imgOverlay');
-    const wallText   = document.getElementById('wallText');
-
-    const mm = gsap.matchMedia();
-
-    /* buildExpandTl: crea la timeline di espansione con scrub variabile.
-       scrub: secondi di latenza tra scroll e animazione (0.5 = fluido)
-       wallDelay: quando appare il wall text nella timeline [0–1] */
-    function buildExpandTl(scrub: number, wallDelay: number) {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: document.body,
-          start: 'top top',
-          end: '+=120%',
-          scrub,
-          onUpdate: (self) => {
-            /* mostra/nasconde il cue scroll al 2% di progresso */
-            if (self.progress > 0.02) cue.classList.remove('visible');
-            else                      cue.classList.add('visible');
-          },
-        },
-      });
-
-      tl
-        /* card in fullscreen — .to() legge la posizione CSS corrente in modo sicuro */
-        .to(card, {
-          width: '100%', height: '100%',
-          top: 0, left: 0,
-          xPercent: 0, yPercent: 0,
-          x: 0, y: 0,
-          borderRadius: 0,
-          ease: 'power2.inOut', duration: 0.6, force3D: true,
-        }, 0)
-        /* dissolve UI — from esplicito perché il reverse deve sempre tornare a opacity:1 */
-        .fromTo('#eyebrow',   { opacity: 1, y: 0 }, { opacity: 0, y: -12, duration: 0.35, ease: 'power2.in', force3D: true }, 0)
-        .fromTo('#title',     { opacity: 1, y: 0 }, { opacity: 0, y: -12, duration: 0.35, ease: 'power2.in', force3D: true }, 0.04)
-        .fromTo('#ctas',      { opacity: 1, y: 0 }, { opacity: 0, y: -12, duration: 0.28, ease: 'power2.in', force3D: true }, 0.12)
-        .fromTo('#scrollCue', { opacity: 1 },        { opacity: 0, duration: 0.2,  ease: 'power2.in' }, 0)
-        /* vignette si intensifica — profondità totem */
-        .fromTo(imgOverlay, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power1.out' }, 0.6)
-        /* wall text: appare a hero completamente fullscreen */
-        .fromTo(wallText, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' }, wallDelay);
-
-      return () => tl.kill();
-    }
-
-    mm.add('(min-width: 769px)', () => {
-      const cleanupExpand = buildExpandTl(0.5, 0.62);
-      const exitTween = gsap.to('#heroWrap', {
-        y: () => -window.innerHeight * 0.45,
-        opacity: 0,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '#nextSection',
-          start: 'top bottom',
-          end: 'top 55%',
-          scrub: 0.4,
-          fastScrollEnd: true,
-          invalidateOnRefresh: true,
-        },
-      });
-      return () => { cleanupExpand(); exitTween.kill(); };
-    });
-
-    mm.add('(max-width: 768px)', () => {
-      const cleanupExpand = buildExpandTl(1.5, 0.75);
-      const exitTween = gsap.to('#heroWrap', {
-        y: () => -window.innerHeight * 0.45,
-        opacity: 0,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '#nextSection',
-          start: 'top bottom',
-          end: 'top 55%',
-          scrub: 1.0,
-          fastScrollEnd: true,
-          invalidateOnRefresh: true,
-        },
-      });
-      return () => { cleanupExpand(); exitTween.kill(); };
-    });
-
     /* ── NAV: trasparente → solido dopo 50px di scroll ── */
     const navEl = document.getElementById('nav');
     function onNavScroll() {
@@ -195,18 +99,23 @@ export default function HomePage() {
     window.addEventListener('scroll', onNavScroll, { passive: true });
     onNavScroll();
 
-    /* ── SCROLL TO FULLSCREEN: clic sulla scroll-arrow ── */
-    function scrollToFullscreen(e: Event) {
+    /* ── SCROLL CUE: si nasconde allo scroll ── */
+    function onCueScroll() {
+      if (window.scrollY > 20) cue.classList.remove('visible');
+    }
+    window.addEventListener('scroll', onCueScroll, { passive: true });
+
+    /* ── SCROLL TO NEXT: clic sulla scroll-arrow ── */
+    function scrollToNext(e: Event) {
       e.preventDefault();
-      const target = window.innerHeight * 1.2;
-      const lenis  = lenisRef.current;
+      const lenis = lenisRef.current;
       if (lenis) {
-        lenis.scrollTo(target, { duration: 3.6, easing: (x: number) => x });
+        lenis.scrollTo('#nextSection', { duration: 1.4, easing: (x: number) => x * (2 - x) });
       } else {
-        gsap.to(window, { scrollTo: { y: target, autoKill: false }, duration: 3.6, ease: 'none' });
+        gsap.to(window, { scrollTo: { y: '#nextSection', autoKill: false }, duration: 1.4, ease: 'power2.inOut' });
       }
     }
-    document.getElementById('ctaScroll')?.addEventListener('click', scrollToFullscreen);
+    document.getElementById('ctaScroll')?.addEventListener('click', scrollToNext);
 
     /* ── MOBILE MENU ── */
     const hamburgerEl  = document.getElementById('hamburger');
@@ -241,15 +150,10 @@ export default function HomePage() {
     function onHamburgerClick() { menuOpen ? closeMenu() : openMenu(); }
     hamburgerEl?.addEventListener('click', onHamburgerClick);
 
-    const onResize = () => ScrollTrigger.refresh();
-    window.addEventListener('resize', onResize);
-
     return () => {
-      mm.kill();
-      ScrollTrigger.getAll().forEach((t) => t.kill());
       window.removeEventListener('scroll', onNavScroll);
-      window.removeEventListener('resize', onResize);
-      document.getElementById('ctaScroll')?.removeEventListener('click', scrollToFullscreen);
+      window.removeEventListener('scroll', onCueScroll);
+      document.getElementById('ctaScroll')?.removeEventListener('click', scrollToNext);
       hamburgerEl?.removeEventListener('click', onHamburgerClick);
       document.body.style.overflow = '';
     };
@@ -296,17 +200,14 @@ export default function HomePage() {
         <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>
       </div>
 
-      {/* ══ STICKY HERO ══════════════════════════════════════════════════
+      {/* ══ HERO ═════════════════════════════════════════════════════════
           DOM IDs richiesti dall'engine GSAP — NON rinominare né rimuovere:
-          #heroWrap   → container sticky; GSAP lo scala fuori allo scroll
-          #mediaCard  → pannello immagine che si espande fullscreen
-          #imgOverlay → vignette che appare a fullscreen (profondità totem)
-          #wallText   → testo visibile quando l'hero è fullscreen
-          #eyebrow    → si dissolve durante l'espansione
-          #title      → si dissolve durante l'espansione
-          #ctas       → si dissolve durante l'espansione
-          #scrollCue  → indicatore scroll
-          #nextSection → trigger per l'uscita dell'hero (fuori da heroWrap)
+          #heroWrap    → container hero
+          #eyebrow     → animato dalla Power-On sequence
+          #title       → animato dalla Power-On sequence (scaleY elevation)
+          #ctas        → animato dalla Power-On sequence
+          #scrollCue   → indicatore scroll
+          #nextSection → sezione successiva (target dello scroll-arrow)
       ══ */}
       <div className="hero-sticky-wrap" id="heroWrap">
 

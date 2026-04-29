@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { getImageProps } from 'next/image';
 import { useLenis } from '@/components/SmoothScrolling';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -9,85 +8,111 @@ import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-// Computed once at module level — avoids re-running on every render
-// SOSTITUIRE i path con le immagini hero del progetto
-const { props: heroDesktopProps } = getImageProps({
-  src: '/hero.jpg',
-  alt: 'Hero image',
-  width: 1920,
-  height: 1080,
-  sizes: '100vw',
-  quality: 80,
-  priority: true,
-});
-const { props: heroMobileProps } = getImageProps({
-  src: '/hero-mobile.png',
-  alt: 'Hero image mobile',
-  width: 828,
-  height: 1792,
-  sizes: '100vw',
-  quality: 75,
-  priority: true,
-});
-
 export default function HomePage() {
   const scrollCueRef = useRef<HTMLDivElement>(null);
-  const lenisCtx = useLenis();
-  const lenisRef = useRef(lenisCtx);
-  lenisRef.current = lenisCtx; // always current inside effect closures
+  const lenisCtx     = useLenis();
+  const lenisRef     = useRef(lenisCtx);
+  lenisRef.current   = lenisCtx; // sempre aggiornato nelle closure dell'effect
 
   useEffect(() => {
     const scrollCue = scrollCueRef.current;
     if (!scrollCue) return;
-    const cue = scrollCue; // const alias — TS can't narrow refs through closures
+    const cue = scrollCue;
 
-    /* ── REDUCED MOTION: skip all animations ── */
+    /* ── REDUCED MOTION: salta tutte le animazioni ── */
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       gsap.set(['#nav', '#eyebrow', '#title', '#ctas', '#mediaCard'], {
-        opacity: 1, y: 0, clearProps: 'transform',
+        opacity: 1, y: 0, scaleY: 1, clearProps: 'transform',
       });
       cue.classList.add('visible');
       return;
     }
 
-    /* ── ENTRANCE or IMMEDIATE SET depending on initial scroll ── */
+    /* ── STATO INIZIALE GSAP ────────────────────────────────────────────
+       GSAP possiede tutti i transform degli elementi hero.
+       Non impostare transform via CSS su questi elementi — conflitterebbe.
+       Questi set() definiscono la posizione di partenza dell'animazione.
+    ─────────────────────────────────────────────────────────────────── */
+    gsap.set('#nav',      { opacity: 0, y: -12 });
+    gsap.set('#eyebrow',  { opacity: 0, y: 60 });
+    gsap.set('#title',    { opacity: 0, y: 80, scaleY: 0.92, transformOrigin: 'bottom center' });
+    gsap.set('#ctas',     { opacity: 0, y: 40 });
+    gsap.set('#mediaCard',{ opacity: 0 });
+    gsap.set('#scanline', { y: 0, opacity: 0 });
+
     const isScrolled = window.scrollY > 0;
 
     if (isScrolled) {
+      /* ── RELOAD SCROLLATO: salta l'animazione, imposta lo stato finale ── */
       gsap.set('#nav',       { opacity: 1, y: 0 });
       gsap.set('#eyebrow',   { opacity: 1, y: 0 });
-      gsap.set('#title',     { opacity: 1, y: 0 });
+      gsap.set('#title',     { opacity: 1, y: 0, scaleY: 1 });
       gsap.set('#ctas',      { opacity: 1, y: 0 });
       gsap.set('#mediaCard', { opacity: 1 });
       cue.classList.add('visible');
     } else {
-      const enter = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      enter
-        .to('#nav',       { opacity: 1, y: 0, duration: 0.9 })
-        .to('#eyebrow',   { opacity: 1, y: 0, duration: 0.8 }, '-=0.4')
-        .to('#title',     { opacity: 1, y: 0, duration: 1.0 }, '-=0.5')
-        .to('#ctas',      { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
-        .to('#mediaCard', { opacity: 1, duration: 0.6 }, '-=0.3')
-        .to('#scrollCue', { opacity: 1, duration: 0.5 }, '-=0.1');
-      enter.add(() => { cue.classList.add('visible'); }, '+=0.3');
+      /* ═══════════════════════════════════════════════════════════════════
+         POWER-ON SEQUENCE — "schermo LED che si accende"
+
+         Fasi:
+           0.0s  → 0.9s : Nav scende dall'alto (frame primo)
+           0.2s  → 1.4s : Scanline scorre dall'alto in basso (effetto CRT)
+           0.35s → 1.3s : Media card appare dietro la scanline
+           1.0s  → 1.9s : Eyebrow si eleva (totem che sale)
+           1.15s → 2.2s : Titolo si eleva con scaleY (struttura che si estende)
+           1.45s → 2.2s : CTA group appare
+           2.2s         : Scroll cue diventa visibile
+
+         ── COME MODIFICARE ──
+         Timing: cambia il valore float (offset) alla fine di ogni .to()
+         Easing entrée: power3.out = morbido-fisico; power4.out = più drammatico
+         Scanline: modifica height/box-shadow in globals.css → .hero-scanline
+         Elevation: modifica scaleY (0.92 = sottile, 0.75 = drammatico)
+         Per rimuovere la scanline: elimina il blocco SCANLINE qui sotto
+           e il div .hero-scanline nel JSX.
+      ═══════════════════════════════════════════════════════════════════ */
+      const powerOn = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+      powerOn
+        /* NAV — prima cosa visibile, scende da sopra */
+        .to('#nav', { opacity: 1, y: 0, duration: 0.9 }, 0)
+
+        /* ── SCANLINE: wipe CRT top → bottom ── */
+        .to('#scanline', { opacity: 1, duration: 0.05 }, 0.2)
+        .to('#scanline', { y: '100vh', duration: 1.2, ease: 'power2.inOut' }, 0.2)
+        .to('#scanline', { opacity: 0, duration: 0.08 }, 1.38)
+
+        /* MEDIA CARD — appare mentre la scanline scorre */
+        .to('#mediaCard', { opacity: 1, duration: 0.9, ease: 'power2.out' }, 0.35)
+
+        /* EYEBROW — si eleva come un pannello montato */
+        .to('#eyebrow', { opacity: 1, y: 0, duration: 0.9 }, 1.0)
+
+        /* TITOLO — struttura che si estende verticalmente (scaleY) */
+        .to('#title', { opacity: 1, y: 0, scaleY: 1, duration: 1.1, ease: 'power3.out' }, 1.15)
+
+        /* CTA — ultimo, leggero */
+        .to('#ctas', { opacity: 1, y: 0, duration: 0.7 }, 1.45)
+
+        /* SCROLL CUE — dopo che tutto si è assestato */
+        .add(() => { cue.classList.add('visible'); }, 2.2);
     }
 
-    /* ═══════════════════════════════════════════════════
-       SCROLL MEDIA EXPANSION — responsive via matchMedia
-       Desktop: card centered in right half → fullscreen
-       Mobile:  card in lower half → fullscreen
-    ═══════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════════════════════
+       SCROLL EXPANSION — media card → fullscreen
+       Responsive tramite gsap.matchMedia():
+         Desktop (≥769px): scrub lento, sincrono con Lenis
+         Mobile  (≤768px): scrub più rapido, più reattivo al touch
+    ═══════════════════════════════════════════════════════════════════ */
     const card       = document.getElementById('mediaCard');
     const imgOverlay = document.getElementById('imgOverlay');
     const wallText   = document.getElementById('wallText');
 
     const mm = gsap.matchMedia();
 
-    // Card uses .to() so GSAP reads the CSS resting position directly — no risk
-    // of conflicting with percent-based transforms (xPercent) that fromTo() can
-    // mis-read as pixel offsets when combined with the to-state's x:0/y:0.
-    // Text/overlay elements use .fromTo() to lock the at-top from-state explicitly,
-    // which fixes the re-entry bug (scrub reverse always restores opacity:1).
+    /* buildExpandTl: crea la timeline di espansione con scrub variabile.
+       scrub: secondi di latenza tra scroll e animazione (0.5 = fluido)
+       wallDelay: quando appare il wall text nella timeline [0–1] */
     function buildExpandTl(scrub: number, wallDelay: number) {
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -96,6 +121,7 @@ export default function HomePage() {
           end: '+=120%',
           scrub,
           onUpdate: (self) => {
+            /* mostra/nasconde il cue scroll al 2% di progresso */
             if (self.progress > 0.02) cue.classList.remove('visible');
             else                      cue.classList.add('visible');
           },
@@ -103,7 +129,7 @@ export default function HomePage() {
       });
 
       tl
-        /* card expands to fullscreen — .to() reads CSS state safely */
+        /* card in fullscreen — .to() legge la posizione CSS corrente in modo sicuro */
         .to(card, {
           width: '100%', height: '100%',
           top: 0, left: 0,
@@ -112,20 +138,19 @@ export default function HomePage() {
           borderRadius: 0,
           ease: 'power2.inOut', duration: 0.6, force3D: true,
         }, 0)
-        /* dissolve UI — explicit from so reverse always restores to opacity:1 */
+        /* dissolve UI — from esplicito perché il reverse deve sempre tornare a opacity:1 */
         .fromTo('#eyebrow',   { opacity: 1, y: 0 }, { opacity: 0, y: -12, duration: 0.35, ease: 'power2.in', force3D: true }, 0)
         .fromTo('#title',     { opacity: 1, y: 0 }, { opacity: 0, y: -12, duration: 0.35, ease: 'power2.in', force3D: true }, 0.04)
         .fromTo('#ctas',      { opacity: 1, y: 0 }, { opacity: 0, y: -12, duration: 0.28, ease: 'power2.in', force3D: true }, 0.12)
-        .fromTo('#scrollCue', { opacity: 1 },        { opacity: 0, duration: 0.2, ease: 'power2.in' }, 0)
-        /* overlay settles */
-        .fromTo(imgOverlay,   { opacity: 0 },        { opacity: 1, duration: 0.2, ease: 'power1.out' }, 0.6)
-        /* wall text once fully fullscreen */
-        .fromTo(wallText,     { opacity: 0 },        { opacity: 1, duration: 0.3, ease: 'power2.out' }, wallDelay);
+        .fromTo('#scrollCue', { opacity: 1 },        { opacity: 0, duration: 0.2,  ease: 'power2.in' }, 0)
+        /* vignette si intensifica — profondità totem */
+        .fromTo(imgOverlay, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power1.out' }, 0.6)
+        /* wall text: appare a hero completamente fullscreen */
+        .fromTo(wallText, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' }, wallDelay);
 
       return () => tl.kill();
     }
 
-    /* desktop: lower scrub matches Lenis lerp timing → consistent feel page-wide */
     mm.add('(min-width: 769px)', () => {
       const cleanupExpand = buildExpandTl(0.5, 0.62);
       const exitTween = gsap.to('#heroWrap', {
@@ -143,7 +168,7 @@ export default function HomePage() {
       });
       return () => { cleanupExpand(); exitTween.kill(); };
     });
-    /* mobile: keep original scrub values — mobile feel is already correct */
+
     mm.add('(max-width: 768px)', () => {
       const cleanupExpand = buildExpandTl(1.5, 0.75);
       const exitTween = gsap.to('#heroWrap', {
@@ -162,7 +187,7 @@ export default function HomePage() {
       return () => { cleanupExpand(); exitTween.kill(); };
     });
 
-    /* ── NAV SOLID BACKGROUND after 50px scroll ── */
+    /* ── NAV: trasparente → solido dopo 50px di scroll ── */
     const navEl = document.getElementById('nav');
     function onNavScroll() {
       navEl?.classList.toggle('nav--solid', window.scrollY > 50);
@@ -170,30 +195,24 @@ export default function HomePage() {
     window.addEventListener('scroll', onNavScroll, { passive: true });
     onNavScroll();
 
-    /* ── RECALC on resize ── */
-    const onResize = () => ScrollTrigger.refresh();
-    window.addEventListener('resize', onResize);
-
-    /* ── SCROLL TO FULLSCREEN helper ── */
+    /* ── SCROLL TO FULLSCREEN: clic sulla scroll-arrow ── */
     function scrollToFullscreen(e: Event) {
       e.preventDefault();
       const target = window.innerHeight * 1.2;
-      const lenis = lenisRef.current;
+      const lenis  = lenisRef.current;
       if (lenis) {
         lenis.scrollTo(target, { duration: 3.6, easing: (x: number) => x });
       } else {
         gsap.to(window, { scrollTo: { y: target, autoKill: false }, duration: 3.6, ease: 'none' });
       }
     }
-
-    const ctaBtn  = document.getElementById('ctaScroll');
-    ctaBtn?.addEventListener('click', scrollToFullscreen);
+    document.getElementById('ctaScroll')?.addEventListener('click', scrollToFullscreen);
 
     /* ── MOBILE MENU ── */
-    const hamburgerEl   = document.getElementById('hamburger');
-    const mobileMenuEl  = document.getElementById('mobileMenu');
-    const mobileLinks   = mobileMenuEl ? Array.from(mobileMenuEl.querySelectorAll('a')) : [];
-    let menuOpen        = false;
+    const hamburgerEl  = document.getElementById('hamburger');
+    const mobileMenuEl = document.getElementById('mobileMenu');
+    const mobileLinks  = mobileMenuEl ? Array.from(mobileMenuEl.querySelectorAll('a')) : [];
+    let menuOpen = false;
 
     function openMenu() {
       menuOpen = true;
@@ -201,13 +220,11 @@ export default function HomePage() {
       document.body.style.overflow = 'hidden';
       if (mobileMenuEl) mobileMenuEl.style.pointerEvents = 'auto';
       gsap.to(mobileMenuEl, { opacity: 1, duration: 0.35, ease: 'power2.out' });
-      gsap.fromTo(
-        mobileLinks,
+      gsap.fromTo(mobileLinks,
         { opacity: 0, y: 32 },
-        { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out', delay: 0.18 }
+        { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out', delay: 0.18 },
       );
     }
-
     function closeMenu(cb?: () => void) {
       menuOpen = false;
       hamburgerEl?.classList.remove('is-open');
@@ -221,53 +238,41 @@ export default function HomePage() {
         },
       });
     }
-
     function onHamburgerClick() { menuOpen ? closeMenu() : openMenu(); }
     hamburgerEl?.addEventListener('click', onHamburgerClick);
 
-    const cueTimer = setTimeout(() => { cue.classList.add('visible'); }, 1800);
+    const onResize = () => ScrollTrigger.refresh();
+    window.addEventListener('resize', onResize);
 
     return () => {
       mm.kill();
       ScrollTrigger.getAll().forEach((t) => t.kill());
       window.removeEventListener('scroll', onNavScroll);
       window.removeEventListener('resize', onResize);
-      ctaBtn?.removeEventListener('click', scrollToFullscreen);
+      document.getElementById('ctaScroll')?.removeEventListener('click', scrollToFullscreen);
       hamburgerEl?.removeEventListener('click', onHamburgerClick);
       document.body.style.overflow = '';
-      clearTimeout(cueTimer);
     };
   }, []);
 
   return (
     <div className="home-page">
-      {/* Preload mobile hero — React 19 hoists to <head>, browser preload-scans it immediately */}
-      <link
-        rel="preload"
-        as="image"
-        media="(max-width: 768px)"
-        imageSrcSet={heroMobileProps.srcSet}
-        imageSizes="100vw"
-        fetchPriority="high"
-      />
-
-      {/* ══ FIXED NAV — outside heroWrap so position:fixed works correctly ══ */}
+      {/* ══ NAV — fixed, fuori da heroWrap per position:fixed corretto ══ */}
       <nav id="nav">
-        <div className="logo-wrap">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="logo-icon" src="/logo.png" alt="Logo" />
-          <div className="logo-divider" />
-          <div className="logo-text">
-            {/* BRAND_NAME */}
-            {/* BRAND_TAGLINE */}
-          </div>
-        </div>
+        {/* Wordmark testuale — sostituire con logo SVG quando disponibile */}
+        <a href="/" className="nav-wordmark" aria-label="Mediavisual — Homepage">
+          MEDIA<span>VISUAL</span>
+        </a>
+
         <ul className="nav-links">
-          {/* INSERIRE QUI I LINK DI NAVIGAZIONE DESKTOP */}
-          {/* <li><a href="/">Link 1</a></li> */}
-          {/* <li><a href="/">Link 2</a></li> */}
+          <li><a href="/prodotti">Prodotti</a></li>
+          <li><a href="/progetti">Progetti</a></li>
+          <li><a href="/chi-siamo">Chi Siamo</a></li>
+          <li><a href="/contatti">Contatti</a></li>
         </ul>
-        {/* <a href="/" className="nav-btn">CTA_BUTTON</a> */}
+
+        <a href="/contatti" className="nav-btn">Richiedi Preventivo</a>
+
         <button className="hamburger" id="hamburger" aria-label="Apri menu">
           <span className="hamburger-line" />
           <span className="hamburger-line" />
@@ -276,45 +281,76 @@ export default function HomePage() {
       </nav>
 
       {/* ══ MOBILE MENU OVERLAY ══ */}
-      <div className="mobile-menu" id="mobileMenu">
+      <div
+        className="mobile-menu"
+        id="mobileMenu"
+        style={{ pointerEvents: 'none', opacity: 0 }}
+      >
         <ul className="mobile-menu-list">
-          {/* INSERIRE QUI I LINK DEL MENU MOBILE */}
-          {/* <li><a href="/" className="mobile-menu-link">Link 1</a></li> */}
+          <li><a href="/prodotti"  className="mobile-menu-link">Prodotti</a></li>
+          <li><a href="/progetti"  className="mobile-menu-link">Progetti</a></li>
+          <li><a href="/chi-siamo" className="mobile-menu-link">Chi Siamo</a></li>
+          <li><a href="/contatti"  className="mobile-menu-link">Contatti</a></li>
         </ul>
         <div className="mobile-menu-divider" />
-        {/* <a href="/" className="mobile-menu-cta-link">CTA_BUTTON</a> */}
+        <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>
       </div>
 
-      {/* ══ STICKY HERO — struttura richiesta dall'engine GSAP/Lenis ══ */}
+      {/* ══ STICKY HERO ══════════════════════════════════════════════════
+          DOM IDs richiesti dall'engine GSAP — NON rinominare né rimuovere:
+          #heroWrap   → container sticky; GSAP lo scala fuori allo scroll
+          #mediaCard  → pannello immagine che si espande fullscreen
+          #imgOverlay → vignette che appare a fullscreen (profondità totem)
+          #wallText   → testo visibile quando l'hero è fullscreen
+          #eyebrow    → si dissolve durante l'espansione
+          #title      → si dissolve durante l'espansione
+          #ctas       → si dissolve durante l'espansione
+          #scrollCue  → indicatore scroll
+          #nextSection → trigger per l'uscita dell'hero (fuori da heroWrap)
+      ══ */}
       <div className="hero-sticky-wrap" id="heroWrap">
 
+        {/* Sfondo: gradiente industriale + griglia a punti (via CSS ::after) */}
         <div className="hero-bg" />
 
-        {/* HERO TEXT — gli ID #eyebrow, #title, #ctas sono richiesti dall'engine GSAP */}
+        {/* ── SCANLINE ─────────────────────────────────────────────────────
+            Effetto CRT power-on. GSAP anima y: 0 → 100vh.
+            Per rimuovere: elimina questo div e il blocco "SCANLINE" nel useEffect.
+            Per cambiare colore/spessore: vedi .hero-scanline in globals.css.
+        ─────────────────────────────────────────────────────────────────── */}
+        <div className="hero-scanline" id="scanline" aria-hidden="true" />
+
+        {/* ── HERO TEXT LAYER ── */}
         <div className="hero-inner">
           <div className="hero-top">
             <div className="hero-text-block">
 
-              {/* INSERIRE QUI L'EYEBROW DEL HERO */}
-              {/*
-                <div className="hero-eyebrow" id="eyebrow">
-                  <div className="eyebrow-line" />
-                  <span className="eyebrow-text">EYEBROW_TEXT</span>
-                </div>
-              */}
-              <div className="hero-eyebrow" id="eyebrow" />
+              {/* EYEBROW — GSAP: parte da y:60, opacity:0 */}
+              <div className="hero-eyebrow" id="eyebrow">
+                <div className="eyebrow-line" />
+                <span className="eyebrow-text">Totem · Stand · Display</span>
+              </div>
 
-              {/* INSERIRE QUI IL TITOLO H1 DEL HERO */}
-              {/*
-                <h1 className="hero-title" id="title">
-                  HERO_HEADLINE
-                </h1>
-              */}
-              <h1 className="hero-title" id="title" />
+              {/* TITOLO — GSAP: parte da y:80, scaleY:0.92, opacity:0
+                  <em> forza il line-break e colora il secondo verso in accent.
+                  Per cambiare il copy: modifica solo il testo dentro i tag. */}
+              <h1 className="hero-title" id="title">
+                Costruiamo
+                <em>Visibilità.</em>
+              </h1>
 
+              {/* CTA — GSAP: parte da y:40, opacity:0 */}
               <div className="hero-cta-group" id="ctas">
-                {/* INSERIRE QUI IL CTA SCROLL ARROW (o altri CTA) */}
-                <a href="#" className="hero-scroll-arrow" id="ctaScroll" aria-label="Scorri">
+                <a href="/progetti" className="cta-primary">
+                  <span>Scopri i Progetti</span>
+                  <span className="arr" />
+                </a>
+                <a
+                  href="#"
+                  className="hero-scroll-arrow"
+                  id="ctaScroll"
+                  aria-label="Scorri per vedere il portfolio"
+                >
                   <span className="hero-scroll-arrow-icon" />
                 </a>
               </div>
@@ -323,45 +359,54 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* MEDIA EXPANSION — l'ID #mediaCard è richiesto dall'engine GSAP */}
+        {/* ── MEDIA CARD ───────────────────────────────────────────────────
+            Si espande da pannello flottante → fullscreen con lo scroll.
+            Desktop: posizionato al centro-destra (left:58%).
+            Mobile:  metà inferiore del viewport.
+            SOSTITUIRE hero.jpg con un'immagine di totem/LED wall reale.
+        ─────────────────────────────────────────────────────────────────── */}
         <div className="media-expand-wrap" id="mediaCard">
-          <picture>
-            <source media="(max-width: 768px)" srcSet={heroMobileProps.srcSet} />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              {...heroDesktopProps}
-              decoding="async"
-              className="media-img"
-              style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
-            />
-          </picture>
+          {/* Vignette bordi — effetto "pannello incassato" */}
           <div className="media-overlay" id="imgOverlay" />
 
-          {/* WALL TEXT — visibile quando l'hero è a fullscreen; #wallText richiesto dall'engine */}
+          {/* Wall text — visibile quando l'hero è a fullscreen */}
           <div className="nh360-wall-text" id="wallText">
-            {/* INSERIRE QUI IL CONTENUTO WALL TEXT (titolo + sottotitolo + CTA fullscreen) */}
-            {/*
-              <span className="nh360-wall-title">WALL_TITLE</span>
-              <span className="nh360-wall-sub">WALL_SUBTITLE</span>
-              <a href="/" className="nh360-wall-btn">
-                <span>WALL_CTA_TEXT</span>
-                <span className="arr" />
-              </a>
-            */}
+            <span className="nh360-wall-title">
+              I Tuoi Spazi<br />Parlano.
+            </span>
+            <span className="nh360-wall-sub">
+              Soluzioni Display · Dal Progetto all&apos;Installazione
+            </span>
+            <a href="/contatti" className="nh360-wall-btn">
+              <span>Inizia il Progetto</span>
+              <span className="arr" />
+            </a>
           </div>
         </div>
 
-        {/* SCROLL CUE */}
+        {/* Indicatore scroll */}
         <div className="scroll-cue" id="scrollCue" ref={scrollCueRef}>
           <span className="scroll-cue-text">Scorri</span>
           <div className="scroll-cue-line" />
         </div>
 
       </div>
-      {/* /sticky hero */}
+      {/* /hero sticky */}
 
-      {/* INSERIRE QUI LE SEZIONI DELLA HOME */}
-      {/* Creare o importare un componente con le sezioni (portfolio, blog, CTA, ecc.) */}
+      {/* ══ PRIMA SEZIONE ══════════════════════════════════════════════════
+          #nextSection è il DOM trigger per l'animazione di uscita dell'hero.
+          Deve esistere nel DOM anche se è vuoto — non rimuoverlo.
+          Inserire qui le sezioni di contenuto (prodotti, progetti, CTA, ecc.)
+      ══ */}
+      <section className="next-section" id="nextSection">
+        <div className="section-eyebrow">
+          <div className="section-eyebrow-line" />
+          <span className="section-eyebrow-text">Chi Siamo</span>
+        </div>
+        <h2 className="section-title">
+          Progettiamo e installiamo<br />strutture ad alto impatto visivo.
+        </h2>
+      </section>
 
     </div>
   );

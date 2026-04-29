@@ -6,15 +6,13 @@ import { ChevronDown } from 'lucide-react';
 import gsap from 'gsap';
 
 export default function StaticNav() {
-  const pathname = usePathname();
-  const [portfolioOpen, setPortfolioOpen] = useState(false);
+  const pathname     = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const dropdownRef = useRef<HTMLLIElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLElement>(null);
-  const mobileIsOpen = useRef(false);
+  const mobileMenuRef  = useRef<HTMLDivElement>(null);
+  const headerRef      = useRef<HTMLElement>(null);
+  const mobileIsOpen   = useRef(false);
 
-  // Transparent → solid on scroll (matches home nav behaviour)
+  /* Trasparente → solido allo scroll */
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
@@ -22,24 +20,12 @@ export default function StaticNav() {
       header!.classList.toggle('static-header--solid', window.scrollY > 50);
     }
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll(); // apply immediately in case page loads already scrolled
+    onScroll();
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close dropdown on outside click
+  /* Chiudi tutto al cambio di route */
   useEffect(() => {
-    function onOutsideClick(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setPortfolioOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', onOutsideClick);
-    return () => document.removeEventListener('mousedown', onOutsideClick);
-  }, []);
-
-  // Close everything on route change; re-evaluate sticky state after scroll reset
-  useEffect(() => {
-    setPortfolioOpen(false);
     if (mobileIsOpen.current) closeMobile();
     if (headerRef.current) {
       headerRef.current.classList.toggle('static-header--solid', window.scrollY > 50);
@@ -83,63 +69,31 @@ export default function StaticNav() {
     });
   }
 
+  /* Non renderizzare sulla home — l'animato nav di page.tsx è già lì */
   if (pathname === '/') return null;
 
   return (
     <>
       <header className="static-header" ref={headerRef}>
-        {/* Logo */}
-        <a href="/" className="static-header-logo" aria-label="Torna alla home">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="NextHome logo" className="static-header-logo-img" />
-          <div className="static-header-logo-divider" />
-          <div className="static-header-logo-text">
-            <span className="static-header-logo-main">NextHome</span>
-            <span className="static-header-logo-sub">Real Estate</span>
-          </div>
+        {/* Wordmark — sostituire con logo SVG all'arrivo del brand kit */}
+        <a href="/" className="static-header-logo" aria-label="Mediavisual — Homepage">
+          <span className="static-header-wordmark">
+            MEDIA<span>VISUAL</span>
+          </span>
         </a>
 
-        {/* Desktop nav — hidden at ≤900px */}
+        {/* Nav desktop — nascosto a ≤900px */}
         <div className="static-nav-right">
           <ul className="static-nav-links">
-            <li>
-              <a href="/next-home-360" className="static-nav-link">Next Home 360</a>
-            </li>
-
-            {/* Portfolio with dropdown */}
-            <li
-              ref={dropdownRef}
-              className={`nav-has-dropdown${portfolioOpen ? ' is-open' : ''}`}
-            >
-              <button
-                type="button"
-                className="static-nav-link nav-dropdown-trigger"
-                onClick={() => setPortfolioOpen((o) => !o)}
-                aria-expanded={portfolioOpen}
-                aria-haspopup="true"
-              >
-                Portfolio
-                <span className="nav-chevron">
-                  <ChevronDown size={11} strokeWidth={1.5} />
-                </span>
-              </button>
-              <div className="nav-dropdown">
-                <a href="/portfolio" className="nav-dropdown-item">Tutti gli annunci</a>
-                <div className="nav-dropdown-divider" />
-                <a href="/portfolio/vendite" className="nav-dropdown-item">Vendite</a>
-                <a href="/portfolio/affitti" className="nav-dropdown-item">Affitti</a>
-              </div>
-            </li>
-
-            <li>
-              <a href="/blog" className="static-nav-link">Blog</a>
-            </li>
+            <li><a href="/prodotti"  className="static-nav-link">Prodotti</a></li>
+            <li><a href="/progetti"  className="static-nav-link">Progetti</a></li>
+            <li><a href="/chi-siamo" className="static-nav-link">Chi Siamo</a></li>
+            <li><a href="/contatti"  className="static-nav-link">Contatti</a></li>
           </ul>
-
-          <a href="/valuta-casa" className="static-nav-btn">Valuta la tua casa</a>
+          <a href="/contatti" className="static-nav-btn">Richiedi Preventivo</a>
         </div>
 
-        {/* Hamburger — mobile only (visible at ≤900px) */}
+        {/* Hamburger — visibile a ≤900px */}
         <button
           type="button"
           className={`static-hamburger hamburger${mobileOpen ? ' is-open' : ''}`}
@@ -152,26 +106,20 @@ export default function StaticNav() {
         </button>
       </header>
 
-      {/* Mobile menu overlay — sibling of header so position:fixed is viewport-relative */}
+      {/* Mobile menu overlay */}
       <div
         className="static-mobile-menu"
         ref={mobileMenuRef}
         style={{ pointerEvents: 'none', opacity: 0 }}
       >
         <ul className="mobile-menu-list">
-          <li><a href="/next-home-360" className="mobile-menu-link">Next Home 360</a></li>
-          <li>
-            <a href="/portfolio" className="mobile-menu-link">Portfolio</a>
-            <div className="mobile-menu-sub">
-              <a href="/portfolio/vendite" className="mobile-menu-sub-link">Vendite</a>
-              <span className="mobile-menu-sub-sep">·</span>
-              <a href="/portfolio/affitti" className="mobile-menu-sub-link">Affitti</a>
-            </div>
-          </li>
-          <li><a href="/blog" className="mobile-menu-link">Blog</a></li>
+          <li><a href="/prodotti"  className="mobile-menu-link">Prodotti</a></li>
+          <li><a href="/progetti"  className="mobile-menu-link">Progetti</a></li>
+          <li><a href="/chi-siamo" className="mobile-menu-link">Chi Siamo</a></li>
+          <li><a href="/contatti"  className="mobile-menu-link">Contatti</a></li>
         </ul>
         <div className="mobile-menu-divider" />
-        <a href="/valuta-casa" className="mobile-menu-cta-link">Valuta la tua casa</a>
+        <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>
       </div>
     </>
   );

@@ -1,7 +1,10 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Inizializzazione lazy — evita il crash a build-time quando la variabile non è impostata
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 function esc(str: string): string {
   return str
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
         </p>
       </div>`;
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: 'Next Home <info@nexthomemilano.it>',
       to: 'info@nexthomemilano.it',
       replyTo: email,

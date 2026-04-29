@@ -23,11 +23,17 @@ export default function SmoothScrolling({ children }: { children: ReactNode }) {
       ScrollTrigger.normalizeScroll(true);
     }
 
+    /* ── LENIS CONFIG: scroll fisico e pesante ──────────────────────────
+       lerp: 0.04  → inerzia massima (il default è 0.1).
+                     Abbassare per scroll più "pesante" come un pannello LED.
+       wheelMultiplier: 1.1 → leggermente più sensibile alla rotella.
+       Per scroll più veloce/leggero: alza lerp verso 0.10–0.12.
+    ─────────────────────────────────────────────────────────────────── */
     const instance = new Lenis({
-      lerp: 0.08,
+      lerp: 0.04,
       smoothWheel: true,
-      syncTouch: false, // mobile keeps native scroll momentum
-      wheelMultiplier: 1.0,
+      syncTouch: false, // mobile: momentum nativo (non Lenis)
+      wheelMultiplier: 1.1,
     });
 
     setLenis(instance);

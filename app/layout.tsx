@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import "./globals.css";
 import SmoothScrolling from "@/components/SmoothScrolling";
 import StaticNav from "@/components/StaticNav";
 import Footer from "@/components/Footer";
 
-const cormorant = Cormorant_Garamond({
+/* ── DISPLAY FONT: Barlow Condensed ───────────────────────────────────
+   Peso 700 (bold industriale) e 900 (heavy billboard) per titoli.
+   Variabile CSS: --font-barlow
+   Per sostituire il font: rimpiazza Barlow_Condensed con il nuovo font
+   e aggiorna la variabile in globals.css.
+─────────────────────────────────────────────────────────────────────── */
+const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  weight: ["300", "400", "600"],
-  style: ["normal", "italic"],
+  weight: ["400", "700", "900"],
   display: "swap",
-  variable: "--font-cormorant",
+  variable: "--font-barlow",
 });
 
+/* ── BODY FONT: DM Sans ── */
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500"],
@@ -21,8 +27,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "NextHome — Luxury Real Estate",
-  description: "La tua agenzia immobiliare di fiducia",
+  title: "Mediavisual — Totem e Stand Pubblicitari",
+  description:
+    "Progettazione e installazione di totem, stand e display pubblicitari per centri commerciali e spazi retail.",
 };
 
 export default function RootLayout({
@@ -31,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="it" className={`${cormorant.variable} ${dmSans.variable}`}>
+    <html lang="it" className={`${barlowCondensed.variable} ${dmSans.variable}`}>
       <body>
         <StaticNav />
         <SmoothScrolling>

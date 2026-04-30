@@ -1050,7 +1050,7 @@ body::before {
 html.theme-transitioning *,
 html.theme-transitioning *::before,
 html.theme-transitioning *::after {
-  transition-property: background-color, color, border-color, fill, stroke !important;
+  transition-property: background-color, color, border-color, fill, stroke, opacity !important;
   transition-duration: 300ms !important;
   transition-timing-function: ease !important;
 }

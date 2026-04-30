@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, animate, transform as fmTransform } from 'framer-motion';
 import { useLenis } from '@/components/SmoothScrolling';
-import ThemeToggle from '@/components/ThemeToggle';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -205,37 +204,6 @@ export default function HomePage() {
 
   return (
     <div className="home-page">
-
-      {/* ══ NAV ════════════════════════════════════════════════════════════ */}
-      <nav id="nav">
-        <a href="/" className="nav-wordmark" aria-label="Mediavisual — Homepage">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mediavisual-trasp.png" alt="Mediavisual" className="nav-logo-img" />
-        </a>
-        <ul className="nav-links">
-          <li><a href="/">Home</a></li>
-          <li><a href="/servizi">Servizi</a></li>
-          <li><a href="/realizzazioni">Realizzazioni</a></li>
-        </ul>
-        <ThemeToggle />
-        <a href="/contatti" className="nav-btn">Richiedi Preventivo</a>
-        <button className="hamburger" id="hamburger" aria-label="Apri menu">
-          <span className="hamburger-line" />
-          <span className="hamburger-line" />
-          <span className="hamburger-line" />
-        </button>
-      </nav>
-
-      {/* ══ MOBILE MENU ════════════════════════════════════════════════════ */}
-      <div className="mobile-menu" id="mobileMenu" style={{ pointerEvents: 'none', opacity: 0 }}>
-        <ul className="mobile-menu-list">
-          <li><a href="/"               className="mobile-menu-link">Home</a></li>
-          <li><a href="/servizi"        className="mobile-menu-link">Servizi</a></li>
-          <li><a href="/realizzazioni"  className="mobile-menu-link">Realizzazioni</a></li>
-        </ul>
-        <div className="mobile-menu-divider" />
-        <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>
-      </div>
 
       {/* ══ HERO ════════════════════════════════════════════════════════════
           Layer 1 — mall background (hero-mall.png): full-screen cover

@@ -31,8 +31,8 @@ export default function Footer() {
           <div>
             <h3 className="footer-col-title">Azienda</h3>
             <ul className="footer-links">
-              <li><a href="/chi-siamo">Chi Siamo</a></li>
-              <li><a href="/contatti">Contatti</a></li>
+              <li><a href="/servizi">Servizi</a></li>
+              <li><a href="/realizzazioni">Realizzazioni</a></li>
             </ul>
           </div>
 

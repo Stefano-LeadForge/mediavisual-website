@@ -69,9 +69,6 @@ export default function StaticNav() {
     });
   }
 
-  /* Non renderizzare sulla home — l'animato nav di page.tsx è già lì */
-  if (pathname === '/') return null;
-
   return (
     <>
       <header className="static-header" ref={headerRef}>

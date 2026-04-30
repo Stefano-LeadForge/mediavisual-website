@@ -187,6 +187,7 @@ body::before {
   position: relative;
   margin-top: 11vh;
   will-change: transform, opacity;
+  transform-origin: center 38%;
 }
 .hero-stand-img {
   display: block;

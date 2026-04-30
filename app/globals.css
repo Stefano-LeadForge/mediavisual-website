@@ -241,7 +241,11 @@ body::before {
 .hero-content-block a,
 .hero-content-block button { pointer-events: auto; }
 
-/* CTA centrata, dietro lo stand (z-3 < z-5) */
+/* CTA desktop — in flow sotto headline, dentro hero-content-block (z-10) */
+.hero-cta-desktop { margin-top: 2.5rem; }
+.hero-cta-mobile  { display: none; }
+
+/* CTA mobile — fondo schermo, dietro lo stand (z-3 < z-5) */
 .hero-cta-behind {
   position: absolute;
   bottom: 9vh;
@@ -261,7 +265,6 @@ body::before {
   text-transform: uppercase;
   color: #ffffff;
   margin-bottom: 0;
-  text-shadow: 0 2px 18px rgba(0,0,0,0.45);
 }
 .hero-headline em {
   font-style: normal;
@@ -958,6 +961,8 @@ body::before {
   .hero-stand-logo { height: 38px; top: 22%; left: calc(50% - 4px); }
   .hero-arrow-down { top: 56%; }
   .hero-content-block { top: 6.5rem; left: 1.5rem; max-width: calc(100% - 3rem); }
+  .hero-cta-desktop { display: none; }
+  .hero-cta-mobile  { display: block; }
   .hero-cta-behind { bottom: 7vh; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
 

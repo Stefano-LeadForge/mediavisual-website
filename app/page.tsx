@@ -84,7 +84,7 @@ export default function HomePage() {
 
     /* ── REDUCED MOTION ── */
     if (prefersReduced) {
-      gsap.set(['#nav', '#heroContent'], { opacity: 1, y: 0 });
+      gsap.set(['#nav', '#heroContent', '#heroCta'], { opacity: 1, y: 0 });
       return () => {
         if (entranceTimeout !== null) clearTimeout(entranceTimeout);
         if (arrowEntranceTimeout !== null) clearTimeout(arrowEntranceTimeout);
@@ -94,14 +94,17 @@ export default function HomePage() {
     /* ── POWER-ON ENTRANCE ─────────────────────────────────────────────── */
     gsap.set('#nav',         { opacity: 0, y: -12 });
     gsap.set('#heroContent', { opacity: 0, y: 40  });
+    gsap.set('#heroCta',     { opacity: 0, y: 16  });
 
     if (isScrolled) {
       gsap.set('#nav',         { opacity: 1, y: 0 });
       gsap.set('#heroContent', { opacity: 1, y: 0 });
+      gsap.set('#heroCta',     { opacity: 1, y: 0 });
     } else {
       gsap.timeline({ defaults: { ease: 'power3.out' } })
         .to('#nav',         { opacity: 1, y: 0, duration: 0.9 }, 0)
-        .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1);
+        .to('#heroContent', { opacity: 1, y: 0, duration: 1.0 }, 1.1)
+        .to('#heroCta',     { opacity: 1, y: 0, duration: 0.8 }, 1.6);
     }
 
     /* ── SCROLL ZOOM ── */
@@ -308,22 +311,21 @@ export default function HomePage() {
           aria-hidden="true"
         />
 
-        {/* ── Contenuto hero: logo + headline + CTA ── */}
+        {/* ── Contenuto hero: headline (sopra stand z-10) + CTA (dietro stand z-3) ── */}
         <div className="hero-content-layer" ref={contentRef}>
           <div id="heroContent" className="hero-content-block">
-
             <h1 className="hero-headline">
               il tuo brand,<br />
               <em>al centro dell&apos;attenzione.</em>
             </h1>
+          </div>
 
-            <div className="hero-cta-row">
-              <a href="/contatti" className="cta-primary">
-                <span>Richiedi un Progetto</span>
-                <span className="arr" />
-              </a>
-            </div>
-
+          {/* CTA centrata, z-index 3: lo stand (z-5) la copre parzialmente dal davanti */}
+          <div id="heroCta" className="hero-cta-behind">
+            <a href="/contatti" className="cta-primary">
+              <span>Richiedi un Progetto</span>
+              <span className="arr" />
+            </a>
           </div>
         </div>
 

@@ -187,7 +187,7 @@ body::before {
   position: relative;
   margin-top: 11vh;
   will-change: transform, opacity;
-  transform-origin: center 30%;
+  transform-origin: center 22%;
 }
 .hero-stand-img {
   display: block;
@@ -200,9 +200,9 @@ body::before {
 .hero-stand-logo {
   position: absolute;
   top: 18%;
-  left: 50%;
+  left: calc(50% - 10px);
   transform: translateX(-50%);
-  height: 38px;
+  height: 52px;
   width: auto;
   display: block;
   user-select: none;
@@ -221,19 +221,35 @@ body::before {
 }
 
 /* ── Contenuto hero: headline + CTA ────────────────────────────────── */
+/*    Nessun z-index sul layer → i figli usano z-index nel contesto del genitore.
+      hero-content-block: z-10 (sopra lo stand z-5)
+      hero-cta-behind:    z-3  (dietro lo stand z-5)                              */
 .hero-content-layer {
-  position: absolute; inset: 0; z-index: 10;
-  display: flex; align-items: flex-start;
+  position: absolute; inset: 0;
   pointer-events: none;
 }
-.hero-content-layer a,
-.hero-content-layer button { pointer-events: auto; }
 
 .hero-content-block {
-  padding: 9rem clamp(2rem, 6vw, 6rem) 0;
-  max-width: 560px;
+  position: absolute;
+  top: 9rem;
+  left: clamp(2rem, 6vw, 6rem);
+  max-width: 520px;
+  z-index: 10;
+  pointer-events: none;
 }
+.hero-content-block a,
+.hero-content-block button { pointer-events: auto; }
 
+/* CTA centrata, dietro lo stand (z-3 < z-5) */
+.hero-cta-behind {
+  position: absolute;
+  bottom: 9vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: auto;
+  white-space: nowrap;
+}
 
 .hero-headline {
   font-family: var(--font-barlow), sans-serif;
@@ -242,12 +258,13 @@ body::before {
   line-height: 1;
   letter-spacing: -0.01em;
   text-transform: uppercase;
-  color: #ffffff; /* sempre bianco: testo su foto */
-  margin-bottom: 2.5rem;
+  color: #ffffff;
+  margin-bottom: 0;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.55), 0 1px 6px rgba(0,0,0,0.35);
 }
 .hero-headline em {
   font-style: normal;
-  color: var(--accent-secondary); /* arancione brand */
+  color: var(--accent-secondary);
   display: block;
 }
 
@@ -453,10 +470,12 @@ body::before {
 /* ── LOGO: sempre visibile su qualsiasi sfondo ── */
 .nav-logo-img, .static-logo-img { filter: none; }
 
-/* Stand: swap light/dark image */
-.hero-stand-img--dark { display: none; }
-[data-theme="dark"] .hero-stand-img--light { display: none; }
-[data-theme="dark"] .hero-stand-img--dark  { display: block; }
+/* Stand: cross-fade fluido light ↔ dark (opacity + transition, non display) */
+.hero-stand-img { transition: opacity 300ms ease; }
+.hero-stand-img--light { opacity: 1; }
+.hero-stand-img--dark  { position: absolute; top: 0; left: 0; opacity: 0; }
+[data-theme="dark"] .hero-stand-img--light { opacity: 0; }
+[data-theme="dark"] .hero-stand-img--dark  { opacity: 1; }
 
 /* Freccia scroll: nera su sfondo chiaro, bianca in dark mode */
 .hero-arrow-down { color: #000000; }
@@ -937,7 +956,9 @@ body::before {
   .hero-stand-img { max-height: 50vh; max-width: none; }
   .hero-stand-logo { height: 36px; top: 16%; }
   .hero-arrow-down { top: 56%; }
-  .hero-content-block { padding: 7rem 1.5rem 0; max-width: 100%; }
+  .hero-content-block { top: 6.5rem; left: 1.5rem; max-width: calc(100% - 3rem); }
+  .hero-cta-behind { bottom: 7vh; }
+  .hero-stand-logo { height: 38px; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
 
   .next-section {

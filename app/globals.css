@@ -449,17 +449,7 @@ body::before {
 .hero-stand-group, .hero-mall-bg { backface-visibility: hidden; }
 
 /* ── LOGO: sempre visibile su qualsiasi sfondo ── */
-/* Default (nav trasparente su foto): logo chiaro */
-.nav-logo-img, .static-logo-img { filter: brightness(0) invert(1); }
-/* Nav solida dark mode: stessa cosa */
-[data-theme="dark"] .nav-logo-img,
-[data-theme="dark"] .static-logo-img { filter: brightness(0) invert(1); }
-/* Nav solida light mode: logo scuro su sfondo chiaro */
-[data-theme="light"] .nav--solid .nav-logo-img,
-[data-theme="light"] .static-header--solid .static-logo-img { filter: brightness(0); }
-/* Fallback: senza [data-theme] (light è default) */
-:root:not([data-theme="dark"]) .nav--solid .nav-logo-img,
-:root:not([data-theme="dark"]) .static-header--solid .static-logo-img { filter: brightness(0); }
+.nav-logo-img, .static-logo-img { filter: none; }
 
 /* Stand: swap light/dark image */
 .hero-stand-img--dark { display: none; }

@@ -37,7 +37,7 @@ export default function HomePage() {
     const sy  = scrollY.get();
     const mob = typeof window !== 'undefined' && window.innerWidth < 768;
     if (mob) {
-      return fmTransform(sy, [0, 40, 80, 120, 160], [1, 1.30, 2.00, 3.50, 5.50], { clamp: true });
+      return fmTransform(sy, [0, 20, 40, 60, 80], [1, 1.30, 2.00, 3.50, 5.50], { clamp: true });
     }
     return fmTransform(sy, [0, 45, 90, 135, 180], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
   });
@@ -112,7 +112,7 @@ export default function HomePage() {
       .to(whiteOverlayRef.current, { opacity: 1, duration: 0.6, ease: 'power2.in' }, 0.40);
 
     /* Pin termina quando lo stand riempie lo schermo */
-    const pinDist = window.innerWidth < 768 ? 160 : 180;
+    const pinDist = window.innerWidth < 768 ? 80 : 180;
 
     const st = ScrollTrigger.create({
       trigger:   heroRef.current,
@@ -339,7 +339,7 @@ export default function HomePage() {
       <section className="next-section" id="nextSection">
         <div className="section-eyebrow">
           <div className="section-eyebrow-line" />
-          <span className="section-eyebrow-text">Chi Siamo</span>
+          <span className="section-eyebrow-text">Cosa Facciamo</span>
         </div>
         <h2 className="section-title">
           Progettiamo e installiamo<br />strutture ad alto impatto visivo.

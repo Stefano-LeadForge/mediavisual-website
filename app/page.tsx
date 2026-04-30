@@ -333,7 +333,6 @@ export default function HomePage() {
 
         {/* Scroll cue */}
         <div className="scroll-cue visible" ref={scrollCueRef} aria-hidden="true">
-          <span className="scroll-cue-text">Scorri</span>
           <div className="scroll-cue-line" />
         </div>
 

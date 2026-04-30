@@ -199,8 +199,8 @@ body::before {
 }
 .hero-stand-logo {
   position: absolute;
-  top: 28%;
-  left: calc(50% + 8px);
+  top: 21%;
+  left: calc(50% - 3px);
   transform: translateX(-50%);
   height: 52px;
   width: auto;
@@ -954,11 +954,10 @@ body::before {
 
   .hero-stand-group { margin-top: 10vh; }
   .hero-stand-img { max-height: 50vh; max-width: none; }
-  .hero-stand-logo { height: 36px; top: 16%; }
+  .hero-stand-logo { height: 38px; top: 26%; left: calc(50% - 4px); }
   .hero-arrow-down { top: 56%; }
   .hero-content-block { top: 6.5rem; left: 1.5rem; max-width: calc(100% - 3rem); }
   .hero-cta-behind { bottom: 7vh; }
-  .hero-stand-logo { height: 38px; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
 
   .next-section {

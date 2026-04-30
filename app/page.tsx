@@ -37,9 +37,9 @@ export default function HomePage() {
     const sy  = scrollY.get();
     const mob = typeof window !== 'undefined' && window.innerWidth < 768;
     if (mob) {
-      return fmTransform(sy, [0, 20, 40, 60, 80], [1, 1.03, 1.06, 1.10, 1.16], { clamp: true });
+      return fmTransform(sy, [0, 75, 150, 225, 300], [1, 1.30, 2.00, 3.50, 5.50], { clamp: true });
     }
-    return fmTransform(sy, [0, 45, 90, 135, 180], [1, 1.03, 1.07, 1.13, 1.22], { clamp: true });
+    return fmTransform(sy, [0, 70, 140, 210, 280], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
   });
 
   /* Arrow: scala lievissima + sparisce presto */
@@ -112,7 +112,7 @@ export default function HomePage() {
       .to(whiteOverlayRef.current, { opacity: 1, duration: 0.6, ease: 'power2.in' }, 0.40);
 
     /* Pin termina quando lo stand riempie lo schermo */
-    const pinDist = window.innerWidth < 768 ? 80 : 180;
+    const pinDist = window.innerWidth < 768 ? 300 : 280;
 
     const st = ScrollTrigger.create({
       trigger:   heroRef.current,

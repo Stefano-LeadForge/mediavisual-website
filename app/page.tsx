@@ -205,6 +205,7 @@ export default function HomePage() {
           <img src="/logo-mediavisual-trasp.png" alt="Mediavisual" className="nav-logo-img" />
         </a>
         <ul className="nav-links">
+          <li><a href="/">Home</a></li>
           <li><a href="/servizi">Servizi</a></li>
           <li><a href="/realizzazioni">Realizzazioni</a></li>
           <li><a href="/chi-siamo">Chi Siamo</a></li>
@@ -222,6 +223,7 @@ export default function HomePage() {
       {/* ══ MOBILE MENU ════════════════════════════════════════════════════ */}
       <div className="mobile-menu" id="mobileMenu" style={{ pointerEvents: 'none', opacity: 0 }}>
         <ul className="mobile-menu-list">
+          <li><a href="/"               className="mobile-menu-link">Home</a></li>
           <li><a href="/servizi"        className="mobile-menu-link">Servizi</a></li>
           <li><a href="/realizzazioni"  className="mobile-menu-link">Realizzazioni</a></li>
           <li><a href="/chi-siamo" className="mobile-menu-link">Chi Siamo</a></li>

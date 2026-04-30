@@ -84,6 +84,7 @@ export default function StaticNav() {
         {/* Nav desktop — nascosto a ≤900px */}
         <div className="static-nav-right">
           <ul className="static-nav-links">
+            <li><a href="/"              className="static-nav-link">Home</a></li>
             <li><a href="/servizi"       className="static-nav-link">Servizi</a></li>
             <li><a href="/realizzazioni" className="static-nav-link">Realizzazioni</a></li>
             <li><a href="/chi-siamo" className="static-nav-link">Chi Siamo</a></li>
@@ -114,6 +115,7 @@ export default function StaticNav() {
         style={{ pointerEvents: 'none', opacity: 0 }}
       >
         <ul className="mobile-menu-list">
+          <li><a href="/"              className="mobile-menu-link">Home</a></li>
           <li><a href="/servizi"       className="mobile-menu-link">Servizi</a></li>
           <li><a href="/realizzazioni" className="mobile-menu-link">Realizzazioni</a></li>
           <li><a href="/chi-siamo" className="mobile-menu-link">Chi Siamo</a></li>

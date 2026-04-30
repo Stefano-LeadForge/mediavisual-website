@@ -161,14 +161,7 @@ body::before {
 
 /* ── GRADIENTE: leggibilità testo lato sinistro ─────────────────────── */
 .hero-tint {
-  position: absolute; inset: 0; z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    105deg,
-    rgba(0,0,0,0.60) 0%,
-    rgba(0,0,0,0.30) 40%,
-    transparent 65%
-  );
+  display: none;
 }
 
 /* ── LAYER 2: stand + logo brand ──
@@ -372,6 +365,8 @@ body::before {
 /* Nav solida: usa colore testo del tema */
 .nav--solid .hamburger-line,
 .static-hamburger .hamburger-line { background: var(--text); }
+/* Quando menu aperto: X adattiva al tema (leggibile sull'overlay) */
+.hamburger.is-open .hamburger-line { background: var(--text); }
 .hamburger.is-open .hamburger-line:nth-child(1) { transform: translateY(6px) rotate(45deg); }
 .hamburger.is-open .hamburger-line:nth-child(2) { opacity: 0; transform: scaleX(0); }
 .hamburger.is-open .hamburger-line:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
@@ -402,12 +397,14 @@ body::before {
 .mobile-menu-cta-link {
   font-family: var(--font-dm-sans), sans-serif;
   font-size: 10px; font-weight: 400; letter-spacing: 0.22em;
-  text-transform: uppercase; color: var(--accent); text-decoration: none;
-  border: 1px solid var(--secondary-light);
+  text-transform: uppercase; text-decoration: none;
+  background: #0a0a0a; color: #f5f5f5; border: 1px solid #0a0a0a;
   padding: 14px 36px; display: inline-block; margin-top: 1.5rem;
   transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
 }
-.mobile-menu-cta-link:hover { background: var(--accent); border-color: var(--accent); color: var(--primary); }
+.mobile-menu-cta-link:hover { background: #1a1a1a; border-color: #1a1a1a; }
+[data-theme="dark"] .mobile-menu-cta-link { background: var(--accent); color: var(--primary); border-color: var(--accent); }
+[data-theme="dark"] .mobile-menu-cta-link:hover { background: var(--accent-bright); border-color: var(--accent-bright); }
 
 
 /* CTA primario — sfondo accent pieno */
@@ -980,7 +977,9 @@ body::before {
   .footer-bar { flex-direction: column; align-items: flex-start; gap: 1rem; }
 
   .static-header { padding: 1.25rem 1.5rem; }
-  .static-nav-right { display: none; }
+  .static-nav-right { display: flex; }
+  .static-nav-links { display: none; }
+  .static-nav-btn { display: none; }
   .static-hamburger { display: flex; }
 
   .inner-hero { padding: 9rem 1.5rem 4rem; }
@@ -1036,6 +1035,23 @@ body::before {
 .nav--solid .theme-toggle:hover,
 .static-header .theme-toggle:hover { color: var(--text); }
 
+/* Quando menu mobile aperto: toggle visibile sull'overlay */
+#nav:has(.hamburger.is-open) .theme-toggle,
+.static-header:has(.hamburger.is-open) .theme-toggle { color: var(--text-muted); }
+#nav:has(.hamburger.is-open) .theme-toggle:hover,
+.static-header:has(.hamburger.is-open) .theme-toggle:hover { color: var(--text); }
+
 /* Placeholder anti-flicker (prima del mount React) */
 .theme-toggle--placeholder { width: 30px; height: 30px; }
+
+/* ══════════════════════════════════════
+   THEME TRANSITION — fluida su tutti gli elementi
+══════════════════════════════════════ */
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition-property: background-color, color, border-color, fill, stroke !important;
+  transition-duration: 300ms !important;
+  transition-timing-function: ease !important;
+}
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { ChevronDown } from 'lucide-react';
 import gsap from 'gsap';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -81,19 +80,16 @@ export default function StaticNav() {
           <img src="/logo-mediavisual-trasp.png" alt="Mediavisual" className="static-logo-img" />
         </a>
 
-        {/* Nav desktop — nascosto a ≤900px */}
+        {/* Nav desktop */}
         <div className="static-nav-right">
           <ul className="static-nav-links">
             <li><a href="/"              className="static-nav-link">Home</a></li>
             <li><a href="/servizi"       className="static-nav-link">Servizi</a></li>
             <li><a href="/realizzazioni" className="static-nav-link">Realizzazioni</a></li>
-            <li><a href="/chi-siamo" className="static-nav-link">Chi Siamo</a></li>
-            <li><a href="/contatti"  className="static-nav-link">Contatti</a></li>
           </ul>
+          <ThemeToggle />
           <a href="/contatti" className="static-nav-btn">Richiedi Preventivo</a>
         </div>
-
-        <ThemeToggle />
 
         {/* Hamburger — visibile a ≤900px */}
         <button
@@ -118,8 +114,6 @@ export default function StaticNav() {
           <li><a href="/"              className="mobile-menu-link">Home</a></li>
           <li><a href="/servizi"       className="mobile-menu-link">Servizi</a></li>
           <li><a href="/realizzazioni" className="mobile-menu-link">Realizzazioni</a></li>
-          <li><a href="/chi-siamo" className="mobile-menu-link">Chi Siamo</a></li>
-          <li><a href="/contatti"  className="mobile-menu-link">Contatti</a></li>
         </ul>
         <div className="mobile-menu-divider" />
         <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>

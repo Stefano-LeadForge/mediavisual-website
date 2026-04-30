@@ -216,11 +216,9 @@ export default function HomePage() {
           <li><a href="/">Home</a></li>
           <li><a href="/servizi">Servizi</a></li>
           <li><a href="/realizzazioni">Realizzazioni</a></li>
-          <li><a href="/chi-siamo">Chi Siamo</a></li>
-          <li><a href="/contatti">Contatti</a></li>
         </ul>
-        <a href="/contatti" className="nav-btn">Richiedi Preventivo</a>
         <ThemeToggle />
+        <a href="/contatti" className="nav-btn">Richiedi Preventivo</a>
         <button className="hamburger" id="hamburger" aria-label="Apri menu">
           <span className="hamburger-line" />
           <span className="hamburger-line" />
@@ -234,8 +232,6 @@ export default function HomePage() {
           <li><a href="/"               className="mobile-menu-link">Home</a></li>
           <li><a href="/servizi"        className="mobile-menu-link">Servizi</a></li>
           <li><a href="/realizzazioni"  className="mobile-menu-link">Realizzazioni</a></li>
-          <li><a href="/chi-siamo" className="mobile-menu-link">Chi Siamo</a></li>
-          <li><a href="/contatti"  className="mobile-menu-link">Contatti</a></li>
         </ul>
         <div className="mobile-menu-divider" />
         <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>

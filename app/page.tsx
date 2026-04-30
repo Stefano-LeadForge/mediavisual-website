@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, animate, transform as fmTransform } from 'framer-motion';
 import { useLenis } from '@/components/SmoothScrolling';
+import ThemeToggle from '@/components/ThemeToggle';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -204,6 +205,7 @@ export default function HomePage() {
           <li><a href="/contatti">Contatti</a></li>
         </ul>
         <a href="/contatti" className="nav-btn">Richiedi Preventivo</a>
+        <ThemeToggle />
         <button className="hamburger" id="hamburger" aria-label="Apri menu">
           <span className="hamburger-line" />
           <span className="hamburger-line" />

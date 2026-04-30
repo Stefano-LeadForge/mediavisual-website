@@ -39,6 +39,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="it" className={`${barlowCondensed.variable} ${dmSans.variable}`}>
+      <head>
+        {/* Anti-FOUC: applica il tema PRIMA del render per evitare flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme')||
+(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body>
         <StaticNav />
         <SmoothScrolling>

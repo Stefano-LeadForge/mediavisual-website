@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import gsap from 'gsap';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function StaticNav() {
   const pathname     = usePathname();
@@ -90,6 +91,8 @@ export default function StaticNav() {
           </ul>
           <a href="/contatti" className="static-nav-btn">Richiedi Preventivo</a>
         </div>
+
+        <ThemeToggle />
 
         {/* Hamburger — visibile a ≤900px */}
         <button

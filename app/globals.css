@@ -258,6 +258,7 @@ body::before {
   text-transform: uppercase;
   color: #ffffff;
   margin-bottom: 0;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.35);
 }
 .hero-headline em {
   font-style: normal;
@@ -960,7 +961,7 @@ body::before {
   .hero-content-block { top: 6.5rem; left: 1.5rem; max-width: calc(100% - 3rem); }
   .hero-cta-desktop { display: none; }
   .hero-cta-mobile  { display: block; }
-  .hero-cta-behind { bottom: 7vh; }
+  .hero-cta-behind { bottom: 13vh; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
 
   .next-section {

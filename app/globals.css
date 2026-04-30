@@ -461,6 +461,9 @@ body::before {
 :root:not([data-theme="dark"]) .nav--solid .nav-logo-img,
 :root:not([data-theme="dark"]) .static-header--solid .static-logo-img { filter: brightness(0); }
 
+/* Stand: dark mode → interno bianco diventa nero */
+[data-theme="dark"] .hero-stand-img { filter: invert(1); }
+
 /* ══════════════════════════════════════════
    PRIMA SEZIONE DOPO HERO (#nextSection)
    Serve da trigger per l'uscita dell'hero

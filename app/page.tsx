@@ -139,7 +139,7 @@ export default function HomePage() {
       e.preventDefault();
       const lenis = lenisRef.current;
       const mob = window.innerWidth < 768;
-      const offset = mob ? -90 : -40;
+      const offset = mob ? -75 : -40;
       if (lenis) {
         lenis.scrollTo('#nextSection', { offset, duration: 2.8, easing: (x: number) => x * (2 - x) });
       } else {
@@ -347,6 +347,44 @@ export default function HomePage() {
         <h2 className="section-title">
           Progettiamo e installiamo<br />strutture ad alto impatto visivo.
         </h2>
+        <p className="section-desc">
+          Dalla progettazione all&apos;installazione, realizziamo stand fieristici, totem
+          pubblicitari e soluzioni personalizzate per valorizzare il tuo brand in ogni
+          contesto: fiere, centri commerciali, spazi retail e ambienti urbani.
+        </p>
+
+        <div className="section-realiz">
+          <p className="section-realiz-label">Scopri le nostre realizzazioni</p>
+          <div className="section-realiz-cards">
+            <a href="/realizzazioni?categoria=stand" className="section-realiz-card">
+              <span className="section-realiz-card-title">Stand</span>
+              <span className="section-realiz-card-text">Fieristici, retail e promozionali — strutture modulari o su misura per ogni evento.</span>
+              <span className="section-realiz-card-arrow">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M4 10h12M10 4l6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+            </a>
+            <a href="/realizzazioni?categoria=totem" className="section-realiz-card">
+              <span className="section-realiz-card-title">Totem</span>
+              <span className="section-realiz-card-text">LED, bifacciali e digitali — visibilità massima in ambienti interni ed esterni.</span>
+              <span className="section-realiz-card-arrow">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M4 10h12M10 4l6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+            </a>
+            <a href="/realizzazioni?categoria=extra" className="section-realiz-card">
+              <span className="section-realiz-card-title">Progetti Extra</span>
+              <span className="section-realiz-card-text">Segnaletica, arredo urbano e display — ogni spazio diventa un&apos;opportunità di comunicazione.</span>
+              <span className="section-realiz-card-arrow">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M4 10h12M10 4l6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+            </a>
+          </div>
+        </div>
       </section>
 
     </div>

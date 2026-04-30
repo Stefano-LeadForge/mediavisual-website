@@ -39,6 +39,14 @@ export default function RealizzazioniPage() {
   const [attiva, setAttiva] = useState<Categoria>('tutti');
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('categoria');
+    if (cat && ['stand', 'totem', 'extra'].includes(cat)) {
+      setAttiva(cat as Categoria);
+    }
+  }, []);
+
+  useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });

@@ -497,6 +497,51 @@ body::before {
   color: var(--text); max-width: 700px;
 }
 
+.section-desc {
+  font-size: 1rem; font-weight: 300; line-height: 1.75;
+  color: var(--text-muted); max-width: 560px; margin-top: 2rem;
+}
+
+.section-realiz { margin-top: 3.5rem; }
+.section-realiz-label {
+  display: block;
+  font-size: 9px; font-weight: 400; letter-spacing: 0.44em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.5rem;
+}
+.section-realiz-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+}
+.section-realiz-card {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  padding: 2rem 1.75rem 1.75rem;
+  border: 1px solid var(--border); border-radius: 14px;
+  text-decoration: none; color: var(--text);
+  background: var(--bg-soft);
+  transition: border-color 220ms ease, background 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+.section-realiz-card:hover {
+  border-color: var(--accent-primary);
+  background: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(8,123,188,0.10);
+}
+[data-theme="dark"] .section-realiz-card { background: var(--primary-mid); }
+[data-theme="dark"] .section-realiz-card:hover { background: var(--primary-light); box-shadow: 0 8px 32px rgba(8,123,188,0.15); }
+.section-realiz-card-title {
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 700; font-size: 1.2rem; letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.section-realiz-card-text {
+  font-size: 0.875rem; font-weight: 300; color: var(--text-muted);
+  line-height: 1.6; flex: 1;
+}
+.section-realiz-card-arrow {
+  color: var(--accent-primary); margin-top: 0.75rem;
+  display: inline-flex; transition: transform 220ms ease;
+}
+.section-realiz-card:hover .section-realiz-card-arrow { transform: translateX(5px); }
+
 /* ══════════════════════════════════════
    FOOTER
 ══════════════════════════════════════ */
@@ -901,6 +946,7 @@ body::before {
     -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 160px);
     mask-image: linear-gradient(to bottom, transparent 0px, black 160px);
   }
+  .section-realiz-cards { grid-template-columns: 1fr; }
 
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
   .footer-grid > :first-child { grid-column: 1 / -1; }

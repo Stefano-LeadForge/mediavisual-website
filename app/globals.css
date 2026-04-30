@@ -467,10 +467,16 @@ body::before {
    Serve da trigger per l'uscita dell'hero
 ══════════════════════════════════════════ */
 .next-section {
-  position: relative; z-index: 5;
-  background: var(--bg); /* segue il tema: bianco in light, nero in dark */
+  position: relative; z-index: 40;
+  background: var(--bg);
   padding: 8rem 3.5rem;
+  margin-top: -120px;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -16px 48px rgba(0,0,0,0.08);
   transition: background-color 300ms ease;
+}
+[data-theme="dark"] .next-section {
+  box-shadow: 0 -16px 48px rgba(0,0,0,0.45);
 }
 
 .section-eyebrow {
@@ -887,7 +893,7 @@ body::before {
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
 
-  .next-section { padding: 5rem 1.5rem; }
+  .next-section { padding: 5rem 1.5rem; margin-top: -200px; }
 
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
   .footer-grid > :first-child { grid-column: 1 / -1; }

@@ -37,7 +37,7 @@ export default function HomePage() {
     const sy  = scrollY.get();
     const mob = typeof window !== 'undefined' && window.innerWidth < 768;
     if (mob) {
-      return fmTransform(sy, [0, 20, 40, 60, 80], [1, 1.30, 2.00, 3.50, 5.50], { clamp: true });
+      return fmTransform(sy, [0, 20, 40, 60, 80], [1, 1.10, 1.30, 1.80, 2.80], { clamp: true });
     }
     return fmTransform(sy, [0, 45, 90, 135, 180], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
   });

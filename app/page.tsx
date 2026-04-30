@@ -259,7 +259,14 @@ export default function HomePage() {
             <img
               src="/hero-stand-trasp.png"
               alt=""
-              className="hero-stand-img"
+              className="hero-stand-img hero-stand-img--light"
+              draggable={false}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hero-stand-trasp-dark.png"
+              alt=""
+              className="hero-stand-img hero-stand-img--dark"
               draggable={false}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -283,8 +290,8 @@ export default function HomePage() {
           transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
         >
           <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="25" cy="25" r="23" stroke="black" strokeWidth="1.5" />
-            <polyline points="15,21 25,31 35,21" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="25" cy="25" r="23" stroke="currentColor" strokeWidth="1.5" />
+            <polyline points="15,21 25,31 35,21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </motion.button>
 

@@ -138,10 +138,13 @@ export default function HomePage() {
     function scrollToNext(e: Event) {
       e.preventDefault();
       const lenis = lenisRef.current;
+      const mob = window.innerWidth < 768;
+      const offset = mob ? -90 : -40;
       if (lenis) {
-        lenis.scrollTo('#nextSection', { duration: 1.4, easing: (x: number) => x * (2 - x) });
+        lenis.scrollTo('#nextSection', { offset, duration: 2.8, easing: (x: number) => x * (2 - x) });
       } else {
-        gsap.to(window, { scrollTo: { y: '#nextSection', autoKill: false }, duration: 1.4, ease: 'power2.inOut' });
+        const target = (document.getElementById('nextSection')?.offsetTop ?? 0) + offset;
+        gsap.to(window, { scrollTo: { y: target, autoKill: false }, duration: 2.8, ease: 'power2.inOut' });
       }
     }
     arrowRef.current?.addEventListener('click', scrollToNext);

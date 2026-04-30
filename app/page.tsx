@@ -37,9 +37,17 @@ export default function HomePage() {
     const sy  = scrollY.get();
     const mob = typeof window !== 'undefined' && window.innerWidth < 768;
     if (mob) {
-      return fmTransform(sy, [0, 75, 150, 225, 300], [1, 1.30, 2.00, 3.50, 5.50], { clamp: true });
+      return fmTransform(sy, [0, 75, 150, 225, 300], [1, 1.18, 1.70, 2.80, 4.60], { clamp: true });
     }
     return fmTransform(sy, [0, 70, 140, 210, 280], [1, 1.07, 1.30, 3.50, 8.00], { clamp: true });
+  });
+
+  /* Logo stand: scompare presto su desktop mentre lo stand zooma */
+  const logoOpacity = useTransform(() => {
+    const sy  = scrollY.get();
+    const mob = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (mob) return 1;
+    return fmTransform(sy, [25, 95], [1, 0], { clamp: true });
   });
 
   /* Arrow: scala lievissima + sparisce presto */
@@ -277,12 +285,12 @@ export default function HomePage() {
               className="hero-stand-img hero-stand-img--dark"
               draggable={false}
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <motion.img
               src="/logo-mediavisual-trasp.png"
               alt=""
               className="hero-stand-logo"
               draggable={false}
+              style={{ opacity: logoOpacity }}
             />
           </motion.div>
         </div>

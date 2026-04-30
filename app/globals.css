@@ -473,6 +473,8 @@ body::before {
   margin-top: -120px;
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -16px 48px rgba(0,0,0,0.08);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 110px);
+  mask-image: linear-gradient(to bottom, transparent 0px, black 110px);
   transition: background-color 300ms ease;
 }
 [data-theme="dark"] .next-section {
@@ -893,7 +895,12 @@ body::before {
   .hero-content-block { padding: 0 1.5rem; padding-top: 5.5rem; max-width: 100%; }
   .hero-headline { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 2rem; }
 
-  .next-section { padding: 5rem 1.5rem; margin-top: -200px; }
+  .next-section {
+    padding: 5rem 1.5rem;
+    margin-top: -200px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 160px);
+    mask-image: linear-gradient(to bottom, transparent 0px, black 160px);
+  }
 
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
   .footer-grid > :first-child { grid-column: 1 / -1; }

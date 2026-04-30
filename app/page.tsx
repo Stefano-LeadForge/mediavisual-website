@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { motion, useScroll, useTransform, useMotionValue, animate, transform as fmTransform } from 'framer-motion';
 import { useLenis } from '@/components/SmoothScrolling';
 import gsap from 'gsap';
@@ -235,17 +236,21 @@ export default function HomePage() {
             className="hero-stand-group"
             style={{ scale: scrollScale, opacity: standOpacityEntrance, y: standY }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/hero-stand-trasp.png"
+            <Image
+              src="/hero-stand-trasp-hd.png"
               alt=""
+              width={1600}
+              height={900}
+              priority
               className="hero-stand-img hero-stand-img--light"
               draggable={false}
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/hero-stand-trasp-dark.png"
+            <Image
+              src="/hero-stand-trasp-hd-black.png"
               alt=""
+              width={1600}
+              height={900}
+              priority
               className="hero-stand-img hero-stand-img--dark"
               draggable={false}
             />

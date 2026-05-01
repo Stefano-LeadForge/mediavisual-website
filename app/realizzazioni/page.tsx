@@ -85,12 +85,13 @@ export default function RealizzazioniPage() {
       <section className="inner-hero">
         <div className="inner-hero-eyebrow">
           <span className="inner-hero-eyebrow-line" />
-          <span className="inner-hero-eyebrow-text">Portfolio</span>
+          <span className="inner-hero-eyebrow-text">Il nostro portfolio</span>
         </div>
         <h1 className="inner-hero-title">Realizzazioni</h1>
         <p className="inner-hero-subtitle">
-          Una selezione dei nostri lavori in tutta Italia: stand, totem, insegne
-          e installazioni speciali per brand, centri commerciali e spazi retail.
+          Ogni progetto è la sintesi di progettazione tecnica, qualità costruttiva
+          e identità di brand. Scopri gli allestimenti, i totem e le insegne
+          realizzati per spazi commerciali in tutta Italia.
         </p>
       </section>
 

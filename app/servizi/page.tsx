@@ -11,7 +11,7 @@ const servizi = [
     description:
       'Strutture autoportanti ad alto impatto visivo, ideali per ingressi di centri commerciali, showroom e spazi espositivi. Disponibili in diverse altezze e configurazioni — monofacciali, bifacciali o a 360° — con pannelli retroilluminati LED, schermi digitali integrati o superfici grafiche intercambiabili.',
     cta: 'Scopri i totem',
-    href: '/contatti',
+    href: '/servizi/totem',
     accent: '#c8c0b0',
   },
   {
@@ -21,7 +21,7 @@ const servizi = [
     description:
       'Stand modulari e personalizzati per esposizioni temporanee, eventi e punti vendita. Strutture leggere ma solide, montaggio rapido, trasportabili. Perfetti per fiere, showroom e campagne promozionali in-store. Personalizzabili con grafica brandizzata su ogni superficie.',
     cta: 'Scopri gli stand',
-    href: '/contatti',
+    href: '/servizi/stand',
     accent: '#6b8fa3',
   },
   {
@@ -31,7 +31,7 @@ const servizi = [
     description:
       'Insegne luminose, insegne a plancia, lettere scatolate e segnaletica direzionale per ambienti commerciali e corporate. Progettazione su misura dal disegno alla posa in opera, con attenzione alla normativa vigente e all\'impatto estetico nella struttura ospitante.',
     cta: 'Scopri le insegne',
-    href: '/contatti',
+    href: '/servizi/insegne',
     accent: '#c8c0b0',
   },
   {
@@ -41,7 +41,7 @@ const servizi = [
     description:
       'Schermi LED e LCD di grandi dimensioni per vetrine, gallerie commerciali e spazi pubblici. Contenuti gestiti da remoto via CMS dedicato, aggiornabili in tempo reale. Dalla singola postazione a reti multi-schermo sincronizzate. Assistenza tecnica e manutenzione inclusi.',
     cta: 'Scopri i display',
-    href: '/contatti',
+    href: '/servizi/digital',
     accent: '#6b8fa3',
   },
   {
@@ -50,8 +50,8 @@ const servizi = [
     title: 'Progettazione e Installazione',
     description:
       'Un servizio chiavi in mano: analisi dello spazio, progettazione tecnica e grafica, produzione, trasporto e posa in opera con personale specializzato. Gestiamo l\'intero processo in modo da ridurre al minimo i tempi di fermo del tuo punto vendita.',
-    cta: 'Richiedi un sopralluogo',
-    href: '/contatti',
+    cta: 'Scopri il servizio',
+    href: '/servizi/progettazione',
     accent: '#c8c0b0',
   },
 ];
@@ -76,13 +76,14 @@ export default function ServiziPage() {
       <section className="inner-hero">
         <div className="inner-hero-eyebrow">
           <span className="inner-hero-eyebrow-line" />
-          <span className="inner-hero-eyebrow-text">Cosa facciamo</span>
+          <span className="inner-hero-eyebrow-text">Dal concept alla posa</span>
         </div>
-        <h1 className="inner-hero-title">Servizi</h1>
+        <h1 className="inner-hero-title">Le Nostre Soluzioni</h1>
         <p className="inner-hero-subtitle">
-          Progettiamo, produciamo e installiamo soluzioni di comunicazione visiva
-          per centri commerciali, spazi retail e ambienti corporate.
-          Ogni progetto è pensato su misura, dall&apos;idea alla posa in opera.
+          Progettiamo e realizziamo sistemi di comunicazione visiva per centri
+          commerciali, spazi retail e ambienti corporate. Dall&apos;idea iniziale
+          all&apos;installazione finale, ogni progetto è affidato a un team
+          specializzato e seguito in ogni fase.
         </p>
       </section>
 

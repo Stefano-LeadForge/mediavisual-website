@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
 
@@ -23,8 +23,8 @@ const progetti: Progetto[] = [
   { id: 's4',  categoria: 'stand', src: '/realizzazioni/stand4.webp',  titolo: 'Area Promozionale Retail',    luogo: 'Torino',            anno: '2023' },
   { id: 's5',  categoria: 'stand', src: '/realizzazioni/stand5.webp',  titolo: 'Stand Espositivo Brand',      luogo: 'Milano',            anno: '2024' },
   { id: 's6',  categoria: 'stand', src: '/realizzazioni/stand6.webp',  titolo: 'Allestimento B2B Expo',       luogo: 'Bologna',           anno: '2024' },
-  { id: 's7',  categoria: 'stand', src: '/realizzazioni/stand7.webp',  titolo: 'Stand Corporate Event',      luogo: 'Roma',              anno: '2023' },
-  { id: 's10', categoria: 'stand', src: '/realizzazioni/stand10.webp', titolo: 'Allestimento Trade Show',    luogo: 'Rimini',            anno: '2024' },
+  { id: 's7',  categoria: 'stand', src: '/realizzazioni/stand7.webp',  titolo: 'Stand Corporate Event',       luogo: 'Roma',              anno: '2023' },
+  { id: 's10', categoria: 'stand', src: '/realizzazioni/stand10.webp', titolo: 'Allestimento Trade Show',     luogo: 'Rimini',            anno: '2024' },
   { id: 's11', categoria: 'stand', src: '/realizzazioni/stand11.webp', titolo: 'Stand Fiera Tecnologica',     luogo: 'Milano',            anno: '2023' },
   { id: 's12', categoria: 'stand', src: '/realizzazioni/stand12.webp', titolo: 'Spazio Espositivo Retail',    luogo: 'Firenze',           anno: '2023' },
   { id: 's13', categoria: 'stand', src: '/realizzazioni/stand13.webp', titolo: 'Area Brand Experience',       luogo: 'Torino',            anno: '2024' },
@@ -53,6 +53,10 @@ const categorie: { id: Categoria; label: string }[] = [
 
 export default function RealizzazioniPage() {
   const [attiva, setAttiva] = useState<Categoria>('tutti');
+  const [lbOpen, setLbOpen]   = useState(false);
+  const [lbIndex, setLbIndex] = useState(0);
+  const touchStartX = useRef<number>(0);
+  const visibiliRef = useRef<Progetto[]>([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -64,16 +68,67 @@ export default function RealizzazioniPage() {
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
     tl.to('.inner-hero-eyebrow', { opacity: 1, y: 0, duration: 0.7 })
       .to('.inner-hero-title',   { opacity: 1, y: 0, duration: 0.9 }, '-=0.45')
       .to('.inner-hero-subtitle',{ opacity: 1, y: 0, duration: 0.8 }, '-=0.55')
       .from('.real-filters',     { opacity: 0, y: 20, duration: 0.6 }, '-=0.4')
       .from('.real-item',        { opacity: 0, y: 32, duration: 0.6, stagger: 0.07 }, '-=0.3');
-
     return () => { tl.kill(); };
   }, []);
+
+  /* Chiudi lightbox al cambio filtro */
+  useEffect(() => {
+    setLbOpen(false);
+    document.body.style.overflow = '';
+  }, [attiva]);
+
+  /* Keyboard navigation */
+  useEffect(() => {
+    if (!lbOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      const n = visibiliRef.current.length;
+      if (e.key === 'ArrowLeft')  setLbIndex(i => (i - 1 + n) % n);
+      if (e.key === 'ArrowRight') setLbIndex(i => (i + 1) % n);
+      if (e.key === 'Escape') closeLb();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lbOpen]);
+
+  function openLb(index: number) {
+    setLbIndex(index);
+    setLbOpen(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLb() {
+    setLbOpen(false);
+    document.body.style.overflow = '';
+  }
+
+  function lbPrev(e: React.MouseEvent) {
+    e.stopPropagation();
+    const n = visibiliRef.current.length;
+    setLbIndex(i => (i - 1 + n) % n);
+  }
+
+  function lbNext(e: React.MouseEvent) {
+    e.stopPropagation();
+    const n = visibiliRef.current.length;
+    setLbIndex(i => (i + 1) % n);
+  }
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    const dx = touchStartX.current - e.changedTouches[0].clientX;
+    const n = visibiliRef.current.length;
+    if (dx > 50)  setLbIndex(i => (i + 1) % n);
+    if (dx < -50) setLbIndex(i => (i - 1 + n) % n);
+  }
 
   function handleFilter(cat: Categoria) {
     if (cat === attiva) return;
@@ -92,6 +147,8 @@ export default function RealizzazioniPage() {
   const visibili = attiva === 'tutti'
     ? progetti
     : progetti.filter((p) => p.categoria === attiva);
+
+  visibiliRef.current = visibili;
 
   return (
     <main className="real-page">
@@ -143,15 +200,19 @@ export default function RealizzazioniPage() {
 
         {/* Griglia immagini */}
         <div className="real-grid">
-          {visibili.map((p) => (
-            <div key={p.id} className={`real-item real-item--${p.categoria}`}>
+          {visibili.map((p, index) => (
+            <div
+              key={p.id}
+              className={`real-item real-item--${p.categoria}`}
+              onClick={() => openLb(index)}
+            >
               <div className="real-item-img">
                 <Image
                   src={p.src}
                   alt={p.titolo}
                   fill
                   className="real-item-photo"
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: 'contain' }}
                   sizes="(max-width: 768px) 50vw, 33vw"
                 />
                 <div className="real-item-overlay">
@@ -174,6 +235,44 @@ export default function RealizzazioniPage() {
         </div>
 
       </section>
+
+      {/* ── Lightbox ── */}
+      {lbOpen && visibili[lbIndex] && (
+        <div
+          className="lb-overlay"
+          onClick={closeLb}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <button className="lb-close" onClick={closeLb} aria-label="Chiudi">✕</button>
+
+          <button className="lb-arrow lb-prev" onClick={lbPrev} aria-label="Precedente">
+            <span>&#8592;</span>
+          </button>
+
+          <div className="lb-img-wrap" onClick={(e) => e.stopPropagation()}>
+            <Image
+              src={visibili[lbIndex].src}
+              alt={visibili[lbIndex].titolo}
+              fill
+              style={{ objectFit: 'contain' }}
+              sizes="100vw"
+              priority
+            />
+          </div>
+
+          <button className="lb-arrow lb-next" onClick={lbNext} aria-label="Successivo">
+            <span>&#8594;</span>
+          </button>
+
+          <div className="lb-info" onClick={(e) => e.stopPropagation()}>
+            <span className="lb-title">{visibili[lbIndex].titolo}</span>
+            <span className="lb-meta">{visibili[lbIndex].luogo} · {visibili[lbIndex].anno}</span>
+            <span className="lb-counter">{lbIndex + 1} / {visibili.length}</span>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }

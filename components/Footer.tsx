@@ -16,34 +16,29 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Link rapidi */}
-          <div>
-            <h3 className="footer-col-title">Soluzioni</h3>
-            <ul className="footer-links">
-              <li><a href="/prodotti">Totem Digitali</a></li>
-              <li><a href="/prodotti">Stand Espositivi</a></li>
-              <li><a href="/prodotti">LED Wall</a></li>
-              <li><a href="/progetti">Progetti</a></li>
-            </ul>
-          </div>
-
           {/* Azienda */}
           <div>
             <h3 className="footer-col-title">Azienda</h3>
             <ul className="footer-links">
               <li><a href="/servizi">Servizi</a></li>
               <li><a href="/realizzazioni">Realizzazioni</a></li>
+              <li><a href="/blog">Blog</a></li>
+              <li><a href="/contatti">Contatti</a></li>
             </ul>
           </div>
 
-          {/* Contatti */}
+          {/* Contatti / Dati società */}
           <div>
             <h3 className="footer-col-title">Contatti</h3>
-            <ul className="footer-contacts">
-              {/* AGGIORNARE con i dati reali del cliente */}
-              <li><a href="mailto:info@mediavisual.it">info@mediavisual.it</a></li>
-              <li><a href="tel:+390000000000">+39 000 000 0000</a></li>
-            </ul>
+            <address className="footer-address">
+              <span className="footer-company">Sport In Srl</span>
+              <span>Via A. Albricci, 9</span>
+              <span>20122 Milano</span>
+              <span className="footer-vat">P.IVA 06414070968</span>
+              <a href="mailto:comunicazione@mediavisual.it">
+                comunicazione@mediavisual.it
+              </a>
+            </address>
           </div>
 
         </div>

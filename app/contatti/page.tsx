@@ -86,8 +86,8 @@ export default function ContattiPage() {
             <aside className="contatti-info">
               <div className="contatti-info-block">
                 <span className="contatti-info-label">Email</span>
-                <a href="mailto:info@mediavisual.it" className="contatti-info-value">
-                  info@mediavisual.it
+                <a href="mailto:comunicazione@mediavisual.it" className="contatti-info-value">
+                  comunicazione@mediavisual.it
                 </a>
               </div>
               <div className="contatti-info-block">

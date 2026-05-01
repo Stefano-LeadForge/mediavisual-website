@@ -51,8 +51,8 @@ export async function POST(request: Request) {
       </div>`;
 
     const { error } = await getResend().emails.send({
-      from: 'Mediavisual <info@mediavisual.it>',
-      to: 'info@mediavisual.it',
+      from: 'Mediavisual <comunicazione@mediavisual.it>',
+      to: 'comunicazione@mediavisual.it',
       replyTo: email,
       subject: `Richiesta di preventivo — ${nome} ${cognome}`,
       html,

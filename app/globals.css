@@ -643,7 +643,7 @@ body::before {
   color: var(--text) !important;
   margin-bottom: 0.25rem;
 }
-.footer-vat { color: var(--text-dim) !important; font-size: 11px !important; }
+.footer-vat { font-size: 11px !important; }
 
 /* ══════════════════════════════════════
    STATIC NAV (pagine interne)

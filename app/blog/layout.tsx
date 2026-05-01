@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blog — NextHome Real Estate',
-  description: 'Analisi del mercato immobiliare milanese, consigli pratici e guide per comprare, vendere e affittare casa a Milano.',
+  title: 'Mediavisual — Totem e Stand Pubblicitari',
+  description: 'News, approfondimenti e casi studio su comunicazione visiva, allestimenti espositivi e digital signage.',
 };
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {

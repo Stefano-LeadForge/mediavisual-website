@@ -7,10 +7,10 @@ export default function TerminiPage() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.inner-hero-eyebrow',  { opacity: 0, y: 16, duration: 0.7 })
-      .from('.inner-hero-title',    { opacity: 0, y: 24, duration: 0.9 }, '-=0.45')
-      .from('.inner-hero-subtitle', { opacity: 0, y: 16, duration: 0.8 }, '-=0.55')
-      .from('.legal-content',       { opacity: 0, y: 20, duration: 0.6 }, '-=0.4');
+    tl.to('.inner-hero-eyebrow',  { opacity: 1, y: 0, duration: 0.7 })
+      .to('.inner-hero-title',    { opacity: 1, y: 0, duration: 0.9 }, '-=0.45')
+      .to('.inner-hero-subtitle', { opacity: 1, y: 0, duration: 0.8 }, '-=0.55')
+      .from('.legal-content',     { opacity: 0, y: 20, duration: 0.6 }, '-=0.4');
     return () => { tl.kill(); };
   }, []);
 

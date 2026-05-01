@@ -16,9 +16,9 @@ export default function ServizioPage() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.inner-hero-eyebrow',     { opacity: 0, y: 16, duration: 0.7 })
-      .from('.inner-hero-title',       { opacity: 0, y: 24, duration: 0.9 }, '-=0.45')
-      .from('.inner-hero-subtitle',    { opacity: 0, y: 16, duration: 0.8 }, '-=0.55')
+    tl.to('.inner-hero-eyebrow',       { opacity: 1, y: 0, duration: 0.7 })
+      .to('.inner-hero-title',         { opacity: 1, y: 0, duration: 0.9 }, '-=0.45')
+      .to('.inner-hero-subtitle',      { opacity: 1, y: 0, duration: 0.8 }, '-=0.55')
       .from('.service-description',    { opacity: 0, y: 24, duration: 0.7 }, '-=0.4')
       .from('.service-feature-item',   { opacity: 0, x: -14, duration: 0.45, stagger: 0.07 }, '-=0.45')
       .from('.service-img-placeholder',{ opacity: 0, y: 20, duration: 0.55, stagger: 0.1 }, '-=0.5');

@@ -61,10 +61,10 @@ export default function ServiziPage() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.inner-hero-eyebrow', { opacity: 0, y: 16, duration: 0.7 })
-      .from('.inner-hero-title',   { opacity: 0, y: 24, duration: 0.9 }, '-=0.45')
-      .from('.inner-hero-subtitle',{ opacity: 0, y: 16, duration: 0.8 }, '-=0.55')
-      .from('.servizi-card',       { opacity: 0, y: 40, duration: 0.7, stagger: 0.12 }, '-=0.3');
+    tl.to('.inner-hero-eyebrow', { opacity: 1, y: 0, duration: 0.7 })
+      .to('.inner-hero-title',   { opacity: 1, y: 0, duration: 0.9 }, '-=0.45')
+      .to('.inner-hero-subtitle',{ opacity: 1, y: 0, duration: 0.8 }, '-=0.55')
+      .from('.servizi-card',     { opacity: 0, y: 40, duration: 0.7, stagger: 0.12 }, '-=0.3');
 
     return () => { tl.kill(); };
   }, []);

@@ -947,6 +947,10 @@ body::before {
   transition: transform 600ms cubic-bezier(0.25,0.46,0.45,0.94);
 }
 .real-item:hover .real-item-placeholder { transform: scale(1.04); }
+.real-item-photo {
+  transition: transform 600ms cubic-bezier(0.25,0.46,0.45,0.94) !important;
+}
+.real-item:hover .real-item-photo { transform: scale(1.04); }
 
 .real-item-overlay {
   position: absolute; inset: 0;

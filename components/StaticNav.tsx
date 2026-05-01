@@ -74,7 +74,7 @@ export default function StaticNav() {
       <header className="static-header" ref={headerRef}>
         <a href="/" className="static-header-logo" aria-label="Mediavisual — Homepage">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mediavisual-trasp.png" alt="Mediavisual" className="static-logo-img" />
+          <img src="/logo-mediavisual-trasp.webp" alt="Mediavisual" className="static-logo-img" />
         </a>
 
         {/* Nav desktop */}

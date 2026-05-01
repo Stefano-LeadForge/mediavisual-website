@@ -215,11 +215,11 @@ export default function HomePage() {
 
         {/* ── Layer 1: centro commerciale — desktop/mobile responsive ── */}
         <picture>
-          <source media="(max-width: 767px)" srcSet="/hero-mall-mobile-full.png" />
+          <source media="(max-width: 767px)" srcSet="/hero-mall-mobile-full.webp" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             ref={mallBgRef}
-            src="/hero-mall-desktop.png"
+            src="/hero-mall-desktop.webp"
             alt=""
             className="hero-mall-bg"
             aria-hidden="true"
@@ -237,7 +237,7 @@ export default function HomePage() {
             style={{ scale: scrollScale, opacity: standOpacityEntrance, y: standY }}
           >
             <Image
-              src="/hero-stand-trasp-hd.png"
+              src="/hero-stand-trasp-hd.webp"
               alt=""
               width={1600}
               height={900}
@@ -246,7 +246,7 @@ export default function HomePage() {
               draggable={false}
             />
             <Image
-              src="/hero-stand-trasp-hd-black.png"
+              src="/hero-stand-trasp-hd-black.webp"
               alt=""
               width={1600}
               height={900}
@@ -255,7 +255,7 @@ export default function HomePage() {
               draggable={false}
             />
             <motion.img
-              src="/logo-mediavisual-trasp.png"
+              src="/logo-mediavisual-trasp.webp"
               alt=""
               className="hero-stand-logo"
               draggable={false}

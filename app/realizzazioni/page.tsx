@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import gsap from 'gsap';
 
 type Categoria = 'tutti' | 'stand' | 'totem' | 'extra';
@@ -8,24 +9,41 @@ type Categoria = 'tutti' | 'stand' | 'totem' | 'extra';
 interface Progetto {
   id: string;
   categoria: Omit<Categoria, 'tutti'>;
+  src: string;
   titolo: string;
   luogo: string;
   anno: string;
 }
 
 const progetti: Progetto[] = [
-  { id: 'p1',  categoria: 'stand',  titolo: 'Stand Sportswear Expo',    luogo: 'Milano',  anno: '2024' },
-  { id: 'p2',  categoria: 'stand',  titolo: 'Allestimento Fashion Week', luogo: 'Milano',  anno: '2024' },
-  { id: 'p3',  categoria: 'stand',  titolo: 'Stand Fiera del Mobile',    luogo: 'Salone del Mobile', anno: '2023' },
-  { id: 'p4',  categoria: 'stand',  titolo: 'Area Promozionale Retail',  luogo: 'Torino',  anno: '2023' },
-  { id: 'p5',  categoria: 'totem',  titolo: 'Totem LED Centro Città',    luogo: 'Roma',    anno: '2024' },
-  { id: 'p6',  categoria: 'totem',  titolo: 'Totem Bifacciale Galleria', luogo: 'Napoli',  anno: '2024' },
-  { id: 'p7',  categoria: 'totem',  titolo: 'Insegna Luminosa Flagship', luogo: 'Milano',  anno: '2023' },
-  { id: 'p8',  categoria: 'totem',  titolo: 'Totem Digitale Aeroporto',  luogo: 'Malpensa', anno: '2023' },
-  { id: 'p9',  categoria: 'extra',  titolo: 'Segnaletica Centro Comm.',  luogo: 'Genova',  anno: '2024' },
-  { id: 'p10', categoria: 'extra',  titolo: 'Installazione Artistica',   luogo: 'Venezia', anno: '2024' },
-  { id: 'p11', categoria: 'extra',  titolo: 'Arredo Urbano Brandizzato', luogo: 'Firenze', anno: '2023' },
-  { id: 'p12', categoria: 'extra',  titolo: 'Display Vetrina Flagship',  luogo: 'Bologna', anno: '2023' },
+  // STAND
+  { id: 's1',  categoria: 'stand', src: '/realizzazioni/stand1.webp',  titolo: 'Stand Sportswear Expo',      luogo: 'Milano',            anno: '2024' },
+  { id: 's2',  categoria: 'stand', src: '/realizzazioni/stand2.webp',  titolo: 'Allestimento Fashion Week',   luogo: 'Milano',            anno: '2024' },
+  { id: 's3',  categoria: 'stand', src: '/realizzazioni/stand3.webp',  titolo: 'Stand Fiera del Mobile',      luogo: 'Salone del Mobile', anno: '2023' },
+  { id: 's4',  categoria: 'stand', src: '/realizzazioni/stand4.webp',  titolo: 'Area Promozionale Retail',    luogo: 'Torino',            anno: '2023' },
+  { id: 's5',  categoria: 'stand', src: '/realizzazioni/stand5.webp',  titolo: 'Stand Espositivo Brand',      luogo: 'Milano',            anno: '2024' },
+  { id: 's6',  categoria: 'stand', src: '/realizzazioni/stand6.webp',  titolo: 'Allestimento B2B Expo',       luogo: 'Bologna',           anno: '2024' },
+  { id: 's7',  categoria: 'stand', src: '/realizzazioni/stand7.webp',  titolo: 'Stand Corporate Event',       luogo: 'Roma',              anno: '2023' },
+  { id: 's8',  categoria: 'stand', src: '/realizzazioni/stand8.webp',  titolo: 'Padiglione Fiera di Settore', luogo: 'Verona',            anno: '2023' },
+  { id: 's9',  categoria: 'stand', src: '/realizzazioni/stand9.webp',  titolo: 'Stand Luxury Brand',          luogo: 'Milano',            anno: '2024' },
+  { id: 's10', categoria: 'stand', src: '/realizzazioni/stand10.webp', titolo: 'Allestimento Trade Show',     luogo: 'Rimini',            anno: '2024' },
+  { id: 's11', categoria: 'stand', src: '/realizzazioni/stand11.webp', titolo: 'Stand Fiera Tecnologica',     luogo: 'Milano',            anno: '2023' },
+  { id: 's12', categoria: 'stand', src: '/realizzazioni/stand12.webp', titolo: 'Spazio Espositivo Retail',    luogo: 'Firenze',           anno: '2023' },
+  { id: 's13', categoria: 'stand', src: '/realizzazioni/stand13.webp', titolo: 'Area Brand Experience',       luogo: 'Torino',            anno: '2024' },
+  // TOTEM
+  { id: 't1',  categoria: 'totem', src: '/realizzazioni/totem1.webp',  titolo: 'Totem LED Centro Città',      luogo: 'Roma',              anno: '2024' },
+  { id: 't2',  categoria: 'totem', src: '/realizzazioni/totem2.webp',  titolo: 'Totem Bifacciale Galleria',   luogo: 'Napoli',            anno: '2024' },
+  { id: 't3',  categoria: 'totem', src: '/realizzazioni/totem3.webp',  titolo: 'Insegna Luminosa Flagship',   luogo: 'Milano',            anno: '2023' },
+  // EXTRA
+  { id: 'e1',  categoria: 'extra', src: '/realizzazioni/extra1.webp',  titolo: 'Segnaletica Centro Comm.',    luogo: 'Genova',            anno: '2024' },
+  { id: 'e2',  categoria: 'extra', src: '/realizzazioni/extra2.webp',  titolo: 'Installazione Artistica',     luogo: 'Venezia',           anno: '2024' },
+  { id: 'e3',  categoria: 'extra', src: '/realizzazioni/extra3.webp',  titolo: 'Arredo Urbano Brandizzato',   luogo: 'Firenze',           anno: '2023' },
+  { id: 'e4',  categoria: 'extra', src: '/realizzazioni/extra4.webp',  titolo: 'Display Vetrina Flagship',    luogo: 'Bologna',           anno: '2023' },
+  { id: 'e5',  categoria: 'extra', src: '/realizzazioni/extra5.webp',  titolo: 'Allestimento Showroom',       luogo: 'Milano',            anno: '2024' },
+  { id: 'e6',  categoria: 'extra', src: '/realizzazioni/extra6.webp',  titolo: 'Visual Merchandising',        luogo: 'Roma',              anno: '2024' },
+  { id: 'e7',  categoria: 'extra', src: '/realizzazioni/extra7.webp',  titolo: 'Progetto Comunicazione',      luogo: 'Torino',            anno: '2023' },
+  { id: 'e8',  categoria: 'extra', src: '/realizzazioni/extra8.webp',  titolo: 'Installazione Espositiva',    luogo: 'Bari',              anno: '2023' },
+  { id: 'e9',  categoria: 'extra', src: '/realizzazioni/extra9.webp',  titolo: 'Progetto Extra',              luogo: 'Padova',            anno: '2024' },
 ];
 
 const categorie: { id: Categoria; label: string }[] = [
@@ -59,7 +77,6 @@ export default function RealizzazioniPage() {
     return () => { tl.kill(); };
   }, []);
 
-  /* Animazione griglia al cambio filtro */
   function handleFilter(cat: Categoria) {
     if (cat === attiva) return;
     gsap.to('.real-item', {
@@ -131,8 +148,14 @@ export default function RealizzazioniPage() {
           {visibili.map((p) => (
             <div key={p.id} className={`real-item real-item--${p.categoria}`}>
               <div className="real-item-img">
-                {/* Placeholder: sostituire con <img src=... /> al ricevimento delle immagini */}
-                <div className="real-item-placeholder" />
+                <Image
+                  src={p.src}
+                  alt={p.titolo}
+                  fill
+                  className="real-item-photo"
+                  style={{ objectFit: 'cover' }}
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
                 <div className="real-item-overlay">
                   <span className="real-item-cat">{p.categoria}</span>
                   <h3 className="real-item-title">{p.titolo}</h3>

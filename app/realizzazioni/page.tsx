@@ -98,7 +98,21 @@ export default function RealizzazioniPage() {
       {/* ── Galleria ── */}
       <section className="real-gallery-section">
 
-        {/* Filtri categoria */}
+        {/* Filtri: select su mobile */}
+        <div className="real-filter-select-wrap">
+          <select
+            className="real-filter-select"
+            value={attiva}
+            onChange={(e) => handleFilter(e.target.value as Categoria)}
+          >
+            {categorie.map((c) => (
+              <option key={c.id} value={c.id}>{c.label}</option>
+            ))}
+          </select>
+          <span className="real-filter-select-arrow" />
+        </div>
+
+        {/* Filtri: button su desktop */}
         <div className="real-filters">
           {categorie.map((c) => (
             <button

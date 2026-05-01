@@ -83,6 +83,7 @@ export default function StaticNav() {
             <li><a href="/"              className="static-nav-link">Home</a></li>
             <li><a href="/servizi"       className="static-nav-link">Servizi</a></li>
             <li><a href="/realizzazioni" className="static-nav-link">Realizzazioni</a></li>
+            <li><a href="/blog"          className="static-nav-link">Blog</a></li>
           </ul>
           <ThemeToggle />
           <a href="/contatti" className="static-nav-btn">Richiedi Preventivo</a>
@@ -111,6 +112,7 @@ export default function StaticNav() {
           <li><a href="/"              className="mobile-menu-link">Home</a></li>
           <li><a href="/servizi"       className="mobile-menu-link">Servizi</a></li>
           <li><a href="/realizzazioni" className="mobile-menu-link">Realizzazioni</a></li>
+          <li><a href="/blog"          className="mobile-menu-link">Blog</a></li>
         </ul>
         <div className="mobile-menu-divider" />
         <a href="/contatti" className="mobile-menu-cta-link">Richiedi Preventivo</a>

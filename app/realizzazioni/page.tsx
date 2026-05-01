@@ -212,7 +212,7 @@ export default function RealizzazioniPage() {
                   alt={p.titolo}
                   fill
                   className="real-item-photo"
-                  style={{ objectFit: 'contain' }}
+                  style={{ objectFit: 'cover' }}
                   sizes="(max-width: 768px) 50vw, 33vw"
                 />
                 <div className="real-item-overlay">

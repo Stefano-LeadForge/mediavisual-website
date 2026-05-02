@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import gsap from 'gsap';
 import ThemeToggle from '@/components/ThemeToggle';
 
 export default function StaticNav() {
@@ -46,26 +45,30 @@ export default function StaticNav() {
     if (!menu) return;
     document.body.style.overflow = 'hidden';
     menu.style.pointerEvents = 'auto';
-    gsap.to(menu, { opacity: 1, duration: 0.35, ease: 'power2.out' });
-    gsap.fromTo(
-      getMobileLinks(),
-      { opacity: 0, y: 32 },
-      { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out', delay: 0.18 },
-    );
+    import('gsap').then(({ default: gsap }) => {
+      gsap.to(menu, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+      gsap.fromTo(
+        getMobileLinks(),
+        { opacity: 0, y: 32 },
+        { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out', delay: 0.18 },
+      );
+    });
   }
 
   function closeMobile(cb?: () => void) {
     mobileIsOpen.current = false;
     const menu = mobileMenuRef.current;
-    gsap.to(getMobileLinks(), { opacity: 0, y: 16, duration: 0.22, ease: 'power2.in', stagger: 0.04 });
-    gsap.to(menu, {
-      opacity: 0, duration: 0.28, delay: 0.18, ease: 'power2.in',
-      onComplete: () => {
-        if (menu) menu.style.pointerEvents = 'none';
-        document.body.style.overflow = '';
-        setMobileOpen(false);
-        cb?.();
-      },
+    import('gsap').then(({ default: gsap }) => {
+      gsap.to(getMobileLinks(), { opacity: 0, y: 16, duration: 0.22, ease: 'power2.in', stagger: 0.04 });
+      gsap.to(menu, {
+        opacity: 0, duration: 0.28, delay: 0.18, ease: 'power2.in',
+        onComplete: () => {
+          if (menu) menu.style.pointerEvents = 'none';
+          document.body.style.overflow = '';
+          setMobileOpen(false);
+          cb?.();
+        },
+      });
     });
   }
 

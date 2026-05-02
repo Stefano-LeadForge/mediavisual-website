@@ -1,11 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import Lenis from '@studio-freight/lenis';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import type Lenis from '@studio-freight/lenis';
 
 const LenisContext = createContext<Lenis | null>(null);
 
@@ -17,40 +13,46 @@ export default function SmoothScrolling({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    // normalizeScroll conflicts with native touch momentum — desktop (mouse) only
     const isTouch = window.matchMedia('(pointer: coarse)').matches;
-    if (!isTouch) {
-      ScrollTrigger.normalizeScroll(true);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let gsapRef: any = null;
+    let tickerFn: ((time: number) => void) | null = null;
+    let instance: Lenis | null = null;
+    let mounted = true;
 
-    /* ── LENIS CONFIG: scroll fisico e pesante ──────────────────────────
-       lerp: 0.04  → inerzia massima (il default è 0.1).
-                     Abbassare per scroll più "pesante" come un pannello LED.
-       wheelMultiplier: 1.1 → leggermente più sensibile alla rotella.
-       Per scroll più veloce/leggero: alza lerp verso 0.10–0.12.
-    ─────────────────────────────────────────────────────────────────── */
-    const instance = new Lenis({
-      lerp: 0.04,
-      smoothWheel: true,
-      syncTouch: false, // mobile: momentum nativo (non Lenis)
-      wheelMultiplier: 1.1,
-    });
+    (async () => {
+      const [{ default: gsap }, { ScrollTrigger }, { default: LenisCtor }] = await Promise.all([
+        import('gsap'),
+        import('gsap/ScrollTrigger'),
+        import('@studio-freight/lenis'),
+      ]);
 
-    setLenis(instance);
+      if (!mounted) return;
 
-    // Drive Lenis from GSAP's ticker — keeps Lenis and ScrollTrigger frame-perfect
-    function onTick(time: number) {
-      instance.raf(time * 1000);
-    }
-    gsap.ticker.add(onTick);
-    gsap.ticker.lagSmoothing(0);
+      gsap.registerPlugin(ScrollTrigger);
+      gsapRef = gsap;
 
-    // Notify ScrollTrigger on every Lenis scroll frame
-    instance.on('scroll', ScrollTrigger.update);
+      if (!isTouch) ScrollTrigger.normalizeScroll(true);
+
+      instance = new LenisCtor({
+        lerp: 0.04,
+        smoothWheel: true,
+        syncTouch: false,
+        wheelMultiplier: 1.1,
+      });
+
+      setLenis(instance);
+
+      tickerFn = (time: number) => instance!.raf(time * 1000);
+      gsap.ticker.add(tickerFn);
+      gsap.ticker.lagSmoothing(0);
+      instance.on('scroll', ScrollTrigger.update);
+    })();
 
     return () => {
-      gsap.ticker.remove(onTick);
-      instance.destroy();
+      mounted = false;
+      if (gsapRef && tickerFn) gsapRef.ticker.remove(tickerFn);
+      if (instance) instance.destroy();
     };
   }, []);
 

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
-import gsap from 'gsap';
+
+type GsapInstance = typeof import('gsap')['default'];
 
 type Categoria = 'tutti' | 'stand' | 'totem' | 'extra';
 
@@ -57,6 +58,7 @@ export default function RealizzazioniPage() {
   const [lbIndex, setLbIndex] = useState(0);
   const touchStartX = useRef<number>(0);
   const visibiliRef = useRef<Progetto[]>([]);
+  const gsapRef = useRef<GsapInstance | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -68,13 +70,17 @@ export default function RealizzazioniPage() {
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.to('.inner-hero-eyebrow', { opacity: 1, y: 0, duration: 0.7 })
-      .to('.inner-hero-title',   { opacity: 1, y: 0, duration: 0.9 }, '-=0.45')
-      .to('.inner-hero-subtitle',{ opacity: 1, y: 0, duration: 0.8 }, '-=0.55')
-      .to('.real-filters',       { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
-      .to('.real-item',          { opacity: 1, y: 0, duration: 0.6, stagger: 0.07 }, '-=0.3');
-    return () => { tl.kill(); };
+    let tl: ReturnType<GsapInstance['timeline']> | null = null;
+    import('gsap').then(({ default: gsap }) => {
+      gsapRef.current = gsap;
+      tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.to('.inner-hero-eyebrow', { opacity: 1, y: 0, duration: 0.7 })
+        .to('.inner-hero-title',   { opacity: 1, y: 0, duration: 0.9 }, '-=0.45')
+        .to('.inner-hero-subtitle',{ opacity: 1, y: 0, duration: 0.8 }, '-=0.55')
+        .to('.real-filters',       { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+        .to('.real-item',          { opacity: 1, y: 0, duration: 0.6, stagger: 0.07 }, '-=0.3');
+    });
+    return () => { tl?.kill(); };
   }, []);
 
   /* Chiudi lightbox al cambio filtro */
@@ -132,6 +138,8 @@ export default function RealizzazioniPage() {
 
   function handleFilter(cat: Categoria) {
     if (cat === attiva) return;
+    const gsap = gsapRef.current;
+    if (!gsap) { setAttiva(cat); return; }
     gsap.to('.real-item', {
       opacity: 0, y: 16, duration: 0.22, stagger: 0.03, ease: 'power2.in',
       onComplete: () => {

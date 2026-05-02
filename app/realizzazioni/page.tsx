@@ -176,6 +176,7 @@ export default function RealizzazioniPage() {
             className="real-filter-select"
             value={attiva}
             onChange={(e) => handleFilter(e.target.value as Categoria)}
+            aria-label="Filtra per categoria"
           >
             {categorie.map((c) => (
               <option key={c.id} value={c.id}>{c.label}</option>
@@ -217,7 +218,7 @@ export default function RealizzazioniPage() {
                 />
                 <div className="real-item-overlay">
                   <span className="real-item-cat">{p.categoria}</span>
-                  <h3 className="real-item-title">{p.titolo}</h3>
+                  <p className="real-item-title">{p.titolo}</p>
                   <p className="real-item-meta">{p.luogo} · {p.anno}</p>
                 </div>
               </div>

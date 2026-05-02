@@ -613,16 +613,16 @@ body::before {
   border-top: 1px solid var(--secondary); padding-top: 1.5rem; gap: 2rem;
 }
 .footer-copy {
-  font-size: 11px; font-weight: 300; color: var(--text-dim); letter-spacing: 0.03em;
+  font-size: 11px; font-weight: 300; color: var(--text-muted); letter-spacing: 0.03em;
 }
-.footer-copy a { color: var(--text-muted); text-decoration: none; transition: color 200ms ease; }
+.footer-copy a { color: var(--text-muted); text-decoration: underline; text-decoration-color: var(--secondary-light); text-underline-offset: 2px; transition: color 200ms ease; }
 .footer-copy a:hover { color: var(--accent); }
 .footer-legal-links { display: flex; align-items: center; gap: 1rem; }
 .footer-legal-links a {
-  font-size: 10px; font-weight: 300; color: var(--text-dim);
+  font-size: 10px; font-weight: 300; color: var(--text-muted);
   text-decoration: none; letter-spacing: 0.03em; transition: color 200ms ease;
 }
-.footer-legal-links a:hover { color: var(--text-muted); }
+.footer-legal-links a:hover { color: var(--text); }
 .footer-sep { color: var(--secondary-light); font-size: 10px; }
 .footer-address {
   font-style: normal;
@@ -932,7 +932,7 @@ body::before {
 .real-filter-btn:last-child { border-right: none; }
 .real-filter-btn:hover { color: var(--text); background: var(--primary-light); }
 .real-filter-btn.is-active {
-  color: var(--primary); background: var(--accent);
+  color: var(--text); background: var(--accent);
 }
 
 /* ── Griglia gallery ── */

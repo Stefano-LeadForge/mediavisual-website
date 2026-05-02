@@ -919,6 +919,7 @@ body::before {
   display: flex; align-items: center; gap: 0;
   border: 1px solid var(--secondary); width: fit-content;
   margin-bottom: 3.5rem;
+  opacity: 0; transform: translateY(20px);
 }
 .real-filter-btn {
   font-size: 9px; font-weight: 400; letter-spacing: 0.36em;
@@ -948,6 +949,7 @@ body::before {
   overflow: hidden;
   cursor: pointer;
   background: var(--bg-soft);
+  opacity: 0; transform: translateY(32px);
 }
 
 /* Item grandi: ogni 5° elemento (0-based index) occupa 2 colonne */
@@ -1536,5 +1538,13 @@ a.contatti-info-value:hover { color: var(--accent); }
   .lb-arrow { display: none; }
   .lb-img-wrap { width: 100vw; height: calc(100vh - 80px); }
   .lb-info { gap: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inner-hero-eyebrow, .inner-hero-title, .inner-hero-subtitle,
+  .real-filters, .real-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 

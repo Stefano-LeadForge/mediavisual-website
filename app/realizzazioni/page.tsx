@@ -201,7 +201,9 @@ export default function RealizzazioniPage() {
 
         {/* Griglia immagini */}
         <div className="real-grid">
-          {visibili.map((p, index) => (
+          {visibili.map((p, index) => {
+            const isWide = index % 5 === 0;
+            return (
             <div
               key={p.id}
               className={`real-item real-item--${p.categoria}`}
@@ -214,7 +216,10 @@ export default function RealizzazioniPage() {
                   fill
                   className="real-item-photo"
                   style={{ objectFit: 'cover' }}
-                  sizes="(max-width: 768px) 50vw, 33vw"
+                  sizes={isWide
+                    ? "(max-width: 768px) 100vw, 66vw"
+                    : "(max-width: 768px) 50vw, 33vw"}
+                  priority={index === 0}
                 />
                 <div className="real-item-overlay">
                   <span className="real-item-cat">{p.categoria}</span>
@@ -223,7 +228,8 @@ export default function RealizzazioniPage() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* CTA contatti */}
